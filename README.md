@@ -11,7 +11,7 @@ Certificados como Soulbound Tokens · Verificación pública sin cuenta · Curso
 [![HashKey](https://img.shields.io/badge/HashKey%20Chain-Testnet-00d2ff?style=flat-square)](#23-hashkey-chain---que-un-auditor-lo-acepte)
 [![Solidity](https://img.shields.io/badge/Solidity%200.8.36-Foundry%20·%2083%20tests-627eea?style=flat-square)](#3-contratos-inteligentes)
 
-Desarrollado por el **Equipo Tessera** — [Blokis](https://blokislabs.com)
+Desarrollado por el **Equipo Tessera** 
 
 </div>
 
@@ -32,6 +32,24 @@ Desarrollado por el **Equipo Tessera** — [Blokis](https://blokislabs.com)
 11. [Alcance real del proyecto](#11-alcance-real-del-proyecto)
 
 ---
+> [!WARNING]
+> **CREDENCIALES DE DEMOSTRACIÓN — USO AUTORIZADO**
+>
+> Estas credenciales son exclusivamente para demostraciones, pruebas y evaluación del buildathon. No las modifique, comparta, abuse de ellas ni las utilice fuera del entorno de demostración.
+
+### Credenciales de demostración
+
+**Estudiante**
+- Correo: `serranoroly23@gmail.com`
+- Contraseña: `R1o2l3y4`
+
+**Institución**
+- Correo: `njm0031533@est.univalle.edu`
+- Contraseña: `Pass1234`
+
+**Docente**
+- Correo: `lau.nunez@outlook.es`
+- Contraseña: `Pass1234`
 
 ## 1. Qué es Tessera
 
@@ -780,7 +798,7 @@ Es lo esperado sin `RESEND_API_KEY`. Los correos van a MailHog: http://localhost
 
 <div align="center">
 
-**Equipo Tessera** · [Blokis](https://blokislabs.com)
+**Equipo Tessera** 
 
 Software propietario — todos los derechos reservados. Ver [LICENSE](./LICENSE).
 
