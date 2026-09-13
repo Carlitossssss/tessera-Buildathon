@@ -44,7 +44,7 @@ Desarrollado por el **Equipo Tessera**
 - Contraseña: `R1o2l3y4`
 
 **Institución**
-- Correo: `njm0031533@est.univalle.edu`
+- Correo: `institution@tessera.io`
 - Contraseña: `Pass1234`
 
 **Docente**
