@@ -1,0 +1,18 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+allowBuilds:
+  argon2: false
+  bufferutil: false
+  esbuild: false
+  keccak: false
+  msgpackr-extract: false
+  sharp: false
+  unrs-resolver: false
+  utf-8-validate: false
+
+onlyBuiltDependencies:
+  - argon2
+  - esbuild
+  - msgpackr-extract

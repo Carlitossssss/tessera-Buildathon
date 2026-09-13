@@ -1,0 +1,97 @@
+# ==========================================
+# Dependencias
+# ==========================================
+node_modules/
+.pnpm-store/
+
+# ==========================================
+# Build outputs
+# ==========================================
+dist/
+build/
+.next/
+.turbo/
+*.tsbuildinfo
+out/
+
+# ==========================================
+# Logs
+# ==========================================
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================
+# Variables de entorno (NUNCA commitear)
+# ==========================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+!.env.example
+
+# ==========================================
+# Coverage & tests
+# ==========================================
+coverage/
+.nyc_output/
+lcov.info
+
+# ==========================================
+# IDE
+# ==========================================
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# OS
+# ==========================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# Cache
+# ==========================================
+.cache/
+.eslintcache
+.parcel-cache/
+
+# ==========================================
+# DB temporales
+# ==========================================
+*.sqlite
+*.sqlite-journal
+
+# ==========================================
+# Uploads / temp
+# ==========================================
+uploads/
+tmp/
+
+# ==========================================
+# Agentes, prompts y herramientas IA
+# (archivos de configuracion local de Copilot,
+#  Cursor, Continue, etc. — no van al repo)
+# ==========================================
+.agents/
+skills-lock.json
+.github/prompts/
+.copilot/
+.cursor/
+.continue/
+.aider*
+
+# ==========================================
+# VSCode (settings locales)
+# ==========================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example

@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // A diferencia de los demás paquetes, éste incluye un provider de React,
+    // así que necesita JSX y los tipos del DOM: la preferencia se guarda en
+    // localStorage y se persiste con fetch.
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["src/**/*"]
+}

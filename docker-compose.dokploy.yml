@@ -1,0 +1,305 @@
+# First-stage production topology for one Dokploy project.
+# Only web and api receive Dokploy domains; every other service remains private.
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tessera}
+      POSTGRES_USER: ${POSTGRES_USER:-tessera}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data_v2:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--requirepass',
+        '${REDIS_PASSWORD:?REDIS_PASSWORD is required}',
+      ]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" ping | grep PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    # quay.io y no Docker Hub: MinIO retiro minio/minio y minio/mc de Hub
+    # (devuelve 404), y un pull fallido ahi aparece como "pull access denied",
+    # que parece un problema de credenciales sin serlo. Mismo tag, mismo digest.
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+      MINIO_APP_ACCESS_KEY: ${MINIO_APP_ACCESS_KEY:?MINIO_APP_ACCESS_KEY is required}
+      MINIO_APP_SECRET_KEY: ${MINIO_APP_SECRET_KEY:?MINIO_APP_SECRET_KEY is required}
+    command: server /data --console-address :9001
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
+    restart: 'no'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+      MINIO_APP_ACCESS_KEY: ${MINIO_APP_ACCESS_KEY:?MINIO_APP_ACCESS_KEY is required}
+      MINIO_APP_SECRET_KEY: ${MINIO_APP_SECRET_KEY:?MINIO_APP_SECRET_KEY is required}
+      MINIO_BUCKET: ${OBJECT_STORAGE_BUCKET:-tessera-assets}
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >-
+      /bin/sh -c 'mc alias set tessera http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+      mc mb --ignore-existing "tessera/$${MINIO_BUCKET}" &&
+      mc anonymous set none "tessera/$${MINIO_BUCKET}" &&
+      printf "{\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Effect\\\":\\\"Allow\\\",\\\"Action\\\":[\\\"s3:GetObject\\\",\\\"s3:PutObject\\\",\\\"s3:DeleteObject\\\",\\\"s3:ListBucket\\\"],\\\"Resource\\\":[\\\"arn:aws:s3:::%s\\\",\\\"arn:aws:s3:::%s/*\\\"]}]}" "$${MINIO_BUCKET}" "$${MINIO_BUCKET}" > /tmp/tessera-policy.json &&
+      mc admin policy create tessera tessera-object-rw /tmp/tessera-policy.json || true &&
+      mc admin user add tessera "$${MINIO_APP_ACCESS_KEY}" "$${MINIO_APP_SECRET_KEY}" || true &&
+      mc admin policy attach tessera tessera-object-rw --user "$${MINIO_APP_ACCESS_KEY}"'
+
+  # Named volumes are created as root by Docker. OpenBao runs as UID 100, so
+  # ownership must be fixed before its Raft backend can create vault.db.
+  openbao-init:
+    image: quay.io/openbao/openbao:2.2.1
+    user: '0:0'
+    restart: 'no'
+    entrypoint:
+      [
+        '/bin/sh',
+        '-ec',
+        'mkdir -p /openbao/data && chown -R 100:1000 /openbao/data && chmod 0700 /openbao/data',
+      ]
+    volumes:
+      - openbao_data:/openbao/data
+
+  openbao:
+    image: quay.io/openbao/openbao:2.2.1
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    command: server -config=/openbao/config/openbao.hcl
+    volumes:
+      - openbao_data:/openbao/data
+      - ./deployment/openbao/openbao.hcl:/openbao/config/openbao.hcl:ro
+    depends_on:
+      openbao-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD-SHELL', 'bao status >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web3signer:
+    build:
+      context: .
+      dockerfile: deployment/web3signer/Dockerfile
+    restart: unless-stopped
+    environment:
+      OPENBAO_HOST: openbao
+      OPENBAO_PORT: '8200'
+      OPENBAO_SIGNING_KEY_PATH: ${OPENBAO_SIGNING_KEY_PATH:-secret/data/tessera/signer}
+      OPENBAO_SIGNING_KEY_FIELD: ${OPENBAO_SIGNING_KEY_FIELD:-value}
+      OPENBAO_WEB3SIGNER_TOKEN: ${OPENBAO_WEB3SIGNER_TOKEN:-bootstrap-pending}
+      WEB3SIGNER_CHAIN_ID: ${POLYGON_CHAIN_ID:-80002}
+    depends_on:
+      openbao:
+        condition: service_started
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://127.0.0.1:9000/upcheck']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Runs on every deploy. Both scripts are idempotent, so this applies pending
+  # schema changes and repairs the documented demo accounts before the app starts.
+  db-init:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: build
+    restart: 'no'
+    command: ['sh', '-ec', 'pnpm --filter @tessera/db migrate && pnpm --filter @tessera/db seed']
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tessera}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tessera}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment: &app_environment
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tessera}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tessera}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      # Web3Signer firma en produccion, con la clave guardada en OpenBao: la
+      # API nunca la ve. Al estar definida esta variable, getSigner() la elige
+      # SIEMPRE y SIGNER_PRIVATE_KEY queda ignorada --de hecho ni siquiera se
+      # pasa al contenedor--. La address que firma es BACKEND_SIGNER_ADDRESS,
+      # y es esa, no la del .env, la que debe ser owner de TesseraRegistry.
+      WEB3SIGNER_URL: http://web3signer:9000
+      OPENBAO_URL: http://openbao:8200
+      OPENBAO_CUSTODY_TOKEN: ${OPENBAO_CUSTODY_TOKEN:?OPENBAO_CUSTODY_TOKEN is required}
+      OPENBAO_CUSTODY_KEY_PATH: ${OPENBAO_CUSTODY_KEY_PATH:-secret/data/tessera/students}
+      OBJECT_STORAGE_PROVIDER: minio
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY_ID: ${MINIO_APP_ACCESS_KEY}
+      S3_SECRET_ACCESS_KEY: ${MINIO_APP_SECRET_KEY}
+      S3_BUCKET: ${OBJECT_STORAGE_BUCKET:-tessera-assets}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS:?API_CORS_ORIGINS is required}
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
+      AUTH_URL: ${AUTH_URL:?AUTH_URL is required}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
+      INSTITUTION_DOCS_REQUIRE_AUTH: ${INSTITUTION_DOCS_REQUIRE_AUTH:-true}
+      DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-20}
+      POLYGON_CHAIN: ${POLYGON_CHAIN:-polygonAmoy}
+      POLYGON_CHAIN_ID: ${POLYGON_CHAIN_ID:-80002}
+      # Unlock Protocol (portal token-gated). Sin valor el portal sigue
+      # funcionando: cada contenido guarda su propio lock en la base de datos,
+      # asi que estas variables solo prerrellenan el panel de la institucion.
+      # Redes donde se replica cada certificado ademas de la principal. Vacio
+      # = no replicar. Lo consume el worker de emision, que comparte este
+      # bloque de entorno con la API.
+      MIRROR_CHAIN_IDS: ${MIRROR_CHAIN_IDS:-}
+      # RPC propios por cadena espejo, en orden de preferencia. Se anteponen
+      # a los publicos del codigo, para resolver un bloqueo por IP sin
+      # desplegar.
+      MIRROR_RPC_URLS_FUJI: ${MIRROR_RPC_URLS_FUJI:-}
+      MIRROR_RPC_URLS_SEPOLIA: ${MIRROR_RPC_URLS_SEPOLIA:-}
+      # Clave que firma las replicas. Web3Signer arranca con un unico
+      # --chain-id y no puede firmar para otra cadena.
+      MIRROR_SIGNER_PRIVATE_KEY: ${MIRROR_SIGNER_PRIVATE_KEY:-}
+      UNLOCK_DEFAULT_LOCK_ADDRESS: ${UNLOCK_DEFAULT_LOCK_ADDRESS:-}
+      UNLOCK_DEFAULT_CHAIN_ID: ${UNLOCK_DEFAULT_CHAIN_ID:-11155111}
+      UNLOCK_RPC_URL: ${UNLOCK_RPC_URL:-}
+      POLYGON_RPC_URL: ${POLYGON_RPC_URL:?POLYGON_RPC_URL is required}
+      POLYGON_RPC_URL_FALLBACK: ${POLYGON_RPC_URL_FALLBACK:-}
+      CONTRACT_REGISTRY_ADDRESS: ${CONTRACT_REGISTRY_ADDRESS:?CONTRACT_REGISTRY_ADDRESS is required}
+      CONTRACT_CERTIFICATE_ADDRESS: ${CONTRACT_CERTIFICATE_ADDRESS:?CONTRACT_CERTIFICATE_ADDRESS is required}
+      CONTRACT_BADGE_ADDRESS: ${CONTRACT_BADGE_ADDRESS:?CONTRACT_BADGE_ADDRESS is required}
+      CONTRACT_AUTO_ISSUER_ADDRESS: ${CONTRACT_AUTO_ISSUER_ADDRESS:?CONTRACT_AUTO_ISSUER_ADDRESS is required}
+      BACKEND_SIGNER_ADDRESS: ${BACKEND_SIGNER_ADDRESS:?BACKEND_SIGNER_ADDRESS is required}
+      ARWEAVE_JWK_JSON: ${ARWEAVE_JWK_JSON:-}
+      ARWEAVE_GATEWAY: ${ARWEAVE_GATEWAY:-https://arweave.net}
+      PINATA_JWT: ${PINATA_JWT:-}
+      PINATA_GATEWAY: ${PINATA_GATEWAY:-https://gateway.pinata.cloud}
+      PINATA_DEDICATED_GATEWAY: ${PINATA_DEDICATED_GATEWAY:-}
+      IPFS_PUBLIC_GATEWAY: ${IPFS_PUBLIC_GATEWAY:-https://ipfs.io}
+      IPFS_FALLBACK_GATEWAYS: ${IPFS_FALLBACK_GATEWAYS:-https://dweb.link,https://ipfs.io,https://w3s.link}
+      IPFS_READINESS_TIMEOUT_SECONDS: ${IPFS_READINESS_TIMEOUT_SECONDS:-45}
+      IPFS_REQUEST_TIMEOUT_MS: ${IPFS_REQUEST_TIMEOUT_MS:-15000}
+      IPFS_POLL_INTERVAL_MS: ${IPFS_POLL_INTERVAL_MS:-3000}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-}
+      SIGNED_URL_TTL_SECONDS: ${SIGNED_URL_TTL_SECONDS:-604800}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: '${RESEND_FROM:-Tessera <no-reply@tessera.io>}'
+      EMAIL_REPLY_TO: '${EMAIL_REPLY_TO:-support@tessera.io}'
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_ENVIRONMENT: ${STRIPE_ENVIRONMENT:-sandbox}
+      STRIPE_PRICE_ESSENTIAL_MONTHLY: ${STRIPE_PRICE_ESSENTIAL_MONTHLY:-}
+      STRIPE_PRICE_GROWTH_MONTHLY: ${STRIPE_PRICE_GROWTH_MONTHLY:-}
+      STRIPE_PRICE_INSTITUTIONAL_MONTHLY: ${STRIPE_PRICE_INSTITUTIONAL_MONTHLY:-}
+      STRIPE_PRICE_SCALE_MONTHLY: ${STRIPE_PRICE_SCALE_MONTHLY:-}
+      STRIPE_PRICE_PACKAGE_200: ${STRIPE_PRICE_PACKAGE_200:-}
+      STRIPE_PRICE_PACKAGE_500: ${STRIPE_PRICE_PACKAGE_500:-}
+      STRIPE_PRICE_PACKAGE_1000: ${STRIPE_PRICE_PACKAGE_1000:-}
+      STRIPE_PRICE_PACKAGE_2000: ${STRIPE_PRICE_PACKAGE_2000:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      RATE_LIMIT_STARTER: ${RATE_LIMIT_STARTER:-100}
+      RATE_LIMIT_PRO: ${RATE_LIMIT_PRO:-1000}
+      RATE_LIMIT_PRO_EXTENDED: ${RATE_LIMIT_PRO_EXTENDED:-2500}
+      RATE_LIMIT_ENTERPRISE: ${RATE_LIMIT_ENTERPRISE:-10000}
+      GDPR_DELETION_GRACE_DAYS: ${GDPR_DELETION_GRACE_DAYS:-30}
+      WEBHOOK_MAX_ATTEMPTS: ${WEBHOOK_MAX_ATTEMPTS:-7}
+      WEBHOOK_TTL_DAYS: ${WEBHOOK_TTL_DAYS:-7}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      web3signer:
+        condition: service_started
+
+  workers:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.workers
+    restart: unless-stopped
+    environment: *app_environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+        NEXT_PUBLIC_AUTH_URL: ${NEXT_PUBLIC_AUTH_URL:?NEXT_PUBLIC_AUTH_URL is required}
+        NEXT_PUBLIC_POLYGON_CHAIN_ID: ${POLYGON_CHAIN_ID:-80002}
+        NEXT_PUBLIC_POLYGON_RPC_URL: ${NEXT_PUBLIC_POLYGON_RPC_URL:-https://polygon-amoy-bor-rpc.publicnode.com}
+        NEXT_PUBLIC_CONTRACT_REGISTRY: ${CONTRACT_REGISTRY_ADDRESS:?CONTRACT_REGISTRY_ADDRESS is required}
+        NEXT_PUBLIC_CONTRACT_CERTIFICATE: ${CONTRACT_CERTIFICATE_ADDRESS:?CONTRACT_CERTIFICATE_ADDRESS is required}
+        NEXT_PUBLIC_CONTRACT_BADGE: ${CONTRACT_BADGE_ADDRESS:?CONTRACT_BADGE_ADDRESS is required}
+        # Se hornean en el build de Next: cambiarlas exige reconstruir la
+        # imagen, no basta con reiniciar el contenedor.
+        NEXT_PUBLIC_UNLOCK_LOCK_ADDRESS: ${UNLOCK_DEFAULT_LOCK_ADDRESS:-}
+        NEXT_PUBLIC_UNLOCK_CHAIN_ID: ${UNLOCK_DEFAULT_CHAIN_ID:-11155111}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
+      AUTH_URL: ${AUTH_URL:?AUTH_URL is required}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      NEXT_TELEMETRY_DISABLED: '1'
+
+volumes:
+  # New database volume after the original deployment used an unavailable
+  # PostgreSQL password. The old volume remains untouched on the server.
+  postgres_data_v2:
+  redis_data:
+  minio_data:
+  openbao_data:

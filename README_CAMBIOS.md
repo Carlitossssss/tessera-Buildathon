@@ -1,0 +1,930 @@
+# Cambios aplicados en esta iteración
+
+Este documento resume los cambios realizados hasta ahora en el proyecto Tessera.
+
+## Criterio de documentación
+
+- Todos los cambios funcionales, visuales, de datos, rutas, endpoints y experiencia de usuario se documentan en este archivo.
+- Las mejoras solicitadas pero todavía no implementadas no se listan como cambios aplicados.
+- Cada nueva iteración debe actualizar esta sección o la sección correspondiente antes de cerrar la tarea.
+
+## Brand system y preparación de rebranding
+
+- Se agregó `BRAND_SYSTEM.md` como guía base del sistema visual de Tessera.
+- Se documentaron los tokens existentes de `apps/web/src/styles/globals.css`:
+  - Paleta de fondos.
+  - Colores de texto.
+  - Bordes.
+  - Escala de marca.
+  - Acentos.
+  - Estados.
+  - Tipografías.
+  - Radios y sombras.
+- Se agregó `apps/web/src/lib/design-tokens.ts` como referencia TypeScript pasiva de los tokens CSS actuales.
+- No se migraron pantallas ni componentes en esta pasada para evitar cambios visuales o funcionales involuntarios.
+- Queda preparado el criterio para rebranding gradual: primero tokens, luego componentes base y finalmente pantallas por módulo.
+- Se actualizó la paleta base del sistema visual con los colores propuestos para rebranding:
+  - Midnight Navy `#080D1A`.
+  - Deep Slate `#101827`.
+  - Slate `#172033`.
+  - Indigo Tessera `#6366F1`.
+  - Periwinkle `#8883FF`.
+  - Cyan `#22D3EE`.
+  - Emerald `#22C98A`.
+  - Off White `#F4F6FA`.
+  - Cool Gray `#98A2B3`.
+- Se agregó la escala `--color-cyan-*` como token separado para usos técnicos, blockchain, hashes e infraestructura.
+- El isotipo de Tessera se refinó con un SVG de mayor calidad visual, sombras suaves, gradientes por pieza y proporciones cercanas a la referencia entregada.
+- Se agregó `apps/web/public/tessera-icon.png` como icono exportable de marca y se registró en la metadata de Next.
+- `BrandMark` ahora renderiza el isotipo desde `/tessera-icon.png`, por lo que landing, headers y shells toman la imagen PNG de marca.
+- `BrandMark` mantiene el wordmark `Tessera.` con punto final.
+- La landing principal quita el chip `En vivo sobre Polygon`, elimina las tres cards numéricas del hero, actualiza el recuadro de verificación y agrega una franja compacta de beneficios/ecosistema.
+- La franja `Impulsado por` de la landing principal muestra logos inline para Polygon, Avalanche, Unlock y HSK Chain.
+- Los botones principales de la landing usan un gradiente indigo más azul, alineado a la referencia visual entregada.
+- El botón primario base (`Button`), incluido `Crear cuenta`, usa el mismo gradiente azul que las acciones principales de la landing.
+- La sección inicial de la landing deja de forzar una altura casi completa de viewport y reduce padding vertical para evitar espacio vacío excesivo.
+- El favicon de la pestaña usa `apps/web/public/tessera-favicon.png`, un recorte del isotipo con menos margen para que se vea más grande en el navegador.
+- Se regeneró `tessera-favicon.png` en `1024x1024` con recorte más ajustado para duplicar la presencia visual del isotipo en la pestaña.
+- Se agregó `apps/web/public/favicon.ico` con el mismo recorte agresivo para cubrir navegadores que priorizan la ruta estándar `/favicon.ico`.
+- Se suavizó el recorte del favicon para evitar que el isotipo se vea cortado, manteniendo más presencia que el asset original.
+- El perfil obligatorio de estudiante y docente precarga nombre/apellido desde el nombre ingresado durante el registro, manteniéndolos editables.
+- Los nuevos estudiantes crean su `user_profile` inicial con nombre/apellido derivados del nombre registrado tras verificar el email.
+- El formulario de información personal usa el nombre de registro como fallback incluso si el perfil detallado existe con campos de nombre vacíos.
+- El modal de creación de badges se compacta como card centrada con altura máxima, scroll interno y acciones fijas, evitando ocupar visualmente toda la pantalla.
+- El modal de creación de badges mejora su responsive móvil separando header, cuerpo scrolleable y footer fijo, reduciendo padding y compactando preview/campos en pantallas pequeñas.
+- El listado institucional de colecciones de badges deja de estirar una única card a todo el ancho y usa columnas compactas como el resto de tarjetas del panel.
+- El formulario de creación/edición de módulos en cursos reorganiza su maquetado: tarjetas de tipo de contenido más estables, peso/regla de finalización proporcionados y acciones separadas en un footer responsive.
+- El detalle institucional de certificado reduce el ancho máximo del documento visual verificable para que no domine toda la pantalla.
+- La inscripción pública por membresía Unlock ahora asegura también el vínculo en `institution_students` cuando la matrícula ya existía, evitando que estudiantes token-gated queden fuera del registro institucional.
+- El botón de acceso por membresía Unlock reintenta automáticamente la verificación on-chain durante unos segundos, evitando que el estudiante tenga que pulsar `Ya la compré` varias veces mientras el RPC refleja la compra.
+- El catálogo público de cursos oculta el botón `Crear cuenta` cuando la persona ya tiene sesión iniciada.
+- Las inscripciones públicas a cursos, por código y por membresía Unlock ahora exigen que el perfil del estudiante esté aprobado antes de crear o devolver una matrícula.
+- El formulario de evaluación dentro de módulos distingue selección múltiple, verdadero/falso y ensayo: las autocalificables muestran aprobación/tiempo límite, mientras ensayo se configura como entrega de revisión manual.
+- El avance real del estudiante en cursos ahora se persiste en `module_progress`: iniciar evaluaciones marca el módulo en curso y los módulos sin evaluaciones pueden marcarse como leídos/completados desde la vista del estudiante.
+
+## Datos reales en vistas internas
+
+- Se reemplazaron datos estáticos en pantallas de administración por consultas reales al API/base.
+- Se agregó el módulo `apps/api/src/modules/admin/routes.ts` con endpoints para:
+  - Dashboard admin.
+  - Instituciones.
+  - Usuarios.
+  - Alertas operativas.
+  - Certificados.
+- Se conectaron las páginas admin del frontend a `apps/web/src/lib/api/endpoints/admin.ts`.
+- Se mantuvo la estructura visual original en las pantallas, reemplazando los valores quemados por datos reales.
+
+## Solicitudes de certificados
+
+- La vista `institution/certificates/requests` dejó de usar datos ficticios.
+- Ahora consume certificados reales desde `meApi.certificates`.
+- Los estados se mapean al flujo existente de la pantalla sin cambiar su composición.
+- Las acciones de aprobación/rechazo que no tienen workflow real separado quedaron deshabilitadas para evitar botones clickeables sin efecto.
+
+## Cursos y emisión de certificados
+
+- Se agregó un servicio compartido de emisión en `apps/api/src/services/certificates.ts`.
+- La emisión pública por API key y la emisión desde el panel ahora usan la misma lógica:
+  - Valida wallet del estudiante.
+  - Valida que el curso pertenezca a la institución.
+  - Valida que la plantilla pertenezca a la institución.
+  - Verifica créditos antes de encolar.
+  - Crea `certificate`.
+  - Crea `emissionJob`.
+  - Encola `emit-certificate` en BullMQ.
+- El endpoint público `/v1/certificates` ahora persiste `courseId` y `templateId` cuando llegan en el payload.
+- Se agregó `POST /v1/me/certificates/issue` para emitir certificados desde el panel con sesión autenticada.
+- Se agregó `GET /v1/me/certificates/:id` para consultar detalle real de un certificado institucional.
+- Se agregó la página `/institution/certificates/[id]`, corrigiendo el link roto del listado de certificados.
+- La página de detalle muestra:
+  - Estado.
+  - Estudiante.
+  - Wallet.
+  - Curso vinculado.
+  - Plantilla vinculada.
+  - Token.
+  - Transacción.
+  - URI/IPFS.
+  - Error de emisión si existe.
+- El flujo de progreso de cursos ahora intenta auto-emitir el certificado cuando una inscripción completa todos los módulos requeridos y alcanza la nota mínima.
+- La auto-emisión evita duplicar certificados por curso/estudiante usando una clave idempotente por inscripción.
+- El recálculo de progreso del estudiante también dispara la auto-emisión, cubriendo flujos de estudiante y docente.
+- Se agregó soporte para vincular una plantilla de certificado desde la pestaña general del curso.
+- `updateCourseAction` y el API de cursos ahora aceptan `templateId`.
+- El wizard de emisión de certificados ahora carga CSV real desde el equipo en vez de cargar siempre datos mock.
+- El wizard conserva un botón para cargar datos de ejemplo explícitamente.
+- El mapeo del wizard ahora exige nombre, email y wallet del estudiante antes de emitir.
+- El wizard encola certificados reales desde el panel usando `issueCertificatesAction`.
+- El botón final del wizard ahora muestra estado de carga y redirige al listado de certificados al terminar.
+- El botón de imprimir del wizard ejecuta una acción real de impresión.
+- Las plantillas reales del wizard usan su `backgroundUrl` como miniatura y fondo de vista previa cuando existe.
+- Las miniaturas respetan la orientación A4, evitan recortes y ya no superponen la maqueta genérica sobre la imagen real.
+- `Subir PDF / imagen` reutiliza el importador dentro del wizard: crea y selecciona la plantilla sin redirecciones ni clics adicionales.
+- El importador quedó compartido entre Plantillas y Emitir certificados.
+- Al importar desde Emisión, la plantilla abre directamente en el editor y, al guardarla, vuelve al wizard ya seleccionada.
+- `Diseñar desde cero` también conserva el contexto de Emisión y selecciona automáticamente la plantilla creada al regresar.
+- El mapeo recupera los campos originales: Nombre, Curso, Fecha de emisión, Código/Token e Instructor; email y wallet quedan separados como datos técnicos obligatorios del destinatario.
+- La tabla previa al mapeo permite agregar columnas y editar sus nombres sin perder los datos ni sus asignaciones.
+- La carga manual valida nombre, email, wallet, fecha y puntaje por celda y bloquea el avance mientras existan errores.
+- Fecha usa un campo nativo con calendario y entrada numérica segmentada; puntaje acepta únicamente números entre 0 y 100 y rechaza el valor antes de guardarlo.
+- El calendario adopta la superficie oscura, foco e iconografía de Tessera sin perder el selector nativo del navegador.
+- La wallet es opcional en la carga: si falta, la API la obtiene por el email de un usuario Tessera registrado; si tampoco existe allí, informa el requisito antes de encolar.
+- El campo wallet usa un icono de información con ayuda contextual sobre formato y omisión.
+- El selector de fecha ahora despliega un calendario Tessera completo, con navegación mensual y selección visual, sin depender del popup nativo del sistema.
+- El calendario y la escritura manual de fecha quedan limitados al día actual; no permiten fechas futuras.
+- La ayuda de wallet se movió al encabezado de la columna y usa un portal para mostrarse completa por encima de tablas y contenedores.
+- El cliente API ahora interpreta correctamente errores con estructura `{ error: { message, details } }`, evitando respuestas genéricas como `Request failed with status 422`.
+- Si no puede resolver la wallet por email, la emisión informa directamente qué destinatario necesita una dirección 0x.
+- El renderer del wizard ahora conserva QR, sello, firma, flechas, estrellas, triángulos, tipografías y recortes de imagen definidos en el editor.
+- Las figuras SVG ya no heredan un fondo rectangular; estrellas, triángulos y flechas conservan su silueta real.
+- `Imprimir PDF` captura únicamente el lienzo del certificado y lo imprime desde un iframe invisible con su orientación A4.
+- La emisión por lote divide automáticamente cargas grandes en bloques de 100, respetando el límite del API y acumulando el total encolado.
+- Los bloques dinámicos reemplazan únicamente su contenido y conservan elementos visuales asociados, como la línea de firma.
+- Las reglas tabulares se movieron a `lib/validation/tabular-fields.ts` y los controles reutilizables a `components/forms/tabular-field-input.tsx`.
+- La carga manual permite quitar columnas y limpia automáticamente datos y mapeos asociados.
+- Con la tabla vacía solo se muestra `Agregar fila`; `Agregar columna` aparece después de crear la primera fila.
+- El wizard interpreta página, orientación, paleta, fondo y bloques del `layout` en vez de tratar la miniatura como una imagen plana.
+- Los campos dinámicos reconocidos conservan su posición y pueden arrastrarse sobre el certificado durante el mapeo.
+- El mapeo del wizard ahora combina asignaciones manuales con autodetección por nombre de columna, por lo que los datos cargados desde formulario/CSV/paste quedan vinculados automáticamente cuando coinciden.
+- El pie del wizard dejó de mostrar la validación rígida de `x/y campos obligatorios`; ahora guía a revisar el mapeo automático y permite continuar cuando los campos requeridos están resueltos.
+- El mapeo del wizard ahora muestra únicamente campos con columnas completadas; las columnas base vacías de la carga manual ya no aparecen como opciones ni se dibujan sobre el certificado.
+- Cuando una plantilla editable no define campos dinámicos, el certificado ya no superpone todos los campos por defecto encima del diseño.
+
+## Health y status
+
+- El endpoint `/v1/health` vuelve a exponer los 7 servicios esperados:
+  - PostgreSQL.
+  - Redis.
+  - Polygon RPC.
+  - Arweave.
+  - Signer.
+  - PayPal Webhook.
+  - SMTP / Email.
+- La página `/status` consume el health real del API.
+
+## Landings con métricas reales
+
+- Se agregó `GET /v1/public/stats`.
+- La landing de estudiantes usa métricas reales para:
+  - Estudiantes verificados.
+  - Badges compartidos.
+- La landing de instituciones usa métricas reales para:
+  - Certificados emitidos.
+  - Tiempo promedio de emisión.
+  - Uptime API desde `/v1/health`.
+
+## Footer y páginas públicas
+
+- Se corrigieron links del footer:
+  - `Para instituciones` apunta a `/instituciones#features`.
+  - `Cómo funciona` apunta a `/instituciones#how`.
+- Se agregaron páginas públicas faltantes:
+  - `/docs/api`
+  - `/status`
+  - `/changelog`
+  - `/legal/compliance`
+  - `/legal/cookies`
+
+## Header público con sesión activa
+
+- El header público ahora detecta sesión activa con NextAuth.
+- Si el usuario está logueado, muestra avatar, usuario y menú.
+- El menú permite ir a:
+  - Panel.
+  - Perfil.
+  - Privacidad.
+  - Cerrar sesión.
+- La versión mobile también muestra el usuario y acciones de sesión.
+
+## Componentes UI reutilizables
+
+- Se agregó `apps/web/src/components/ui/select.tsx` como select nativo reutilizable con estilo Tessera.
+- El nuevo `Select` mantiene compatibilidad con props HTML estándar, `ref`, estado `disabled` y estado `invalid`.
+- El estilo incluye:
+  - Fondo oscuro con gradiente sutil.
+  - Borde y focus ring alineados a Tessera.
+  - Chevron visual integrado.
+  - Opciones con color scheme oscuro.
+- Se migró el select de país en `institution/settings` para usar el nuevo componente.
+- Se migraron los selects nativos restantes al componente `Select`:
+  - Filtro de curso en `teacher/students`.
+  - Estado de avance en `teacher/students/[enrollmentId]`.
+  - Idioma preferido en `student/profile`.
+  - Selector de rol en `institution/team`.
+  - Curso opcional en el wizard de certificados.
+  - Fuente tipográfica y tamaño de hoja dentro del editor de plantillas.
+- Después de la migración, el único `<select>` nativo restante está encapsulado en `components/ui/select.tsx`.
+
+## Plantillas institucionales
+
+- Se ajustó el listado `Mis plantillas` para que escale mejor cuando existan varias plantillas.
+- Las tarjetas pasaron de un formato grande con imagen dominante a un formato compacto horizontal.
+- La previsualización ahora usa `object-contain` para mostrar el certificado completo sin recortarlo.
+- Se redujo el tamaño visual de la miniatura para evitar pérdida evidente de calidad por escalado.
+- Cada tarjeta mantiene nombre, fecha de creación, usos y acción de edición.
+- Se aumentó la miniatura del listado a un tamaño intermedio para mejorar lectura sin volver a tarjetas gigantes.
+- Se agregó acción `Vista previa` directamente en cada plantilla del listado.
+- La vista previa del listado abre un modal con la imagen completa de la plantilla.
+- La acción `Editar` ahora navega a `/institution/templates/editor?templateId=...`.
+- Se agregó acción `Eliminar` para plantillas desde `Mis plantillas`, con modal de confirmación.
+- Las plantillas sin certificados emitidos se pueden eliminar y se desasignan de cursos que las tuvieran seleccionadas.
+- Las plantillas ya usadas en certificados quedan protegidas y muestran un aviso en vez de permitir el borrado.
+- El editor carga la plantilla seleccionada en lugar de abrir siempre el diseño default.
+- Si existe un borrador local específico de esa plantilla, el editor lo restaura por `templateId`.
+- El editor ahora guarda y carga el `layout` JSON editable de la plantilla desde la base.
+- Si no existe `layout` editable, el editor usa la imagen guardada como fondo de la hoja como fallback.
+- El editor evita superponer ornamentos default cuando carga una plantilla existente con `backgroundUrl`.
+- El listado cliente de plantillas usa utilidades de `@/lib/format` para evitar importar `@/lib/dashboard`, que es `server-only`.
+- Se agregó actualización real de plantillas en `PUT /v1/me/templates/:id`.
+- El guardado desde una plantilla existente actualiza esa plantilla en vez de crear otra nueva.
+- La opción `Subir desde tu equipo` ahora funciona desde el listado de plantillas.
+- La tarjeta `Más usada` muestra `—` y `Sin emisiones todavía` cuando todas las plantillas tienen cero usos.
+- Se creó `template-create-options.tsx` como componente cliente para manejar subida de archivos.
+- La subida acepta imágenes PNG/JPG/WebP y PDFs de hasta 10 MB.
+- Las imágenes se normalizan a JPEG con tamaño controlado para evitar archivos demasiado grandes.
+- Los PDFs se renderizan desde la primera página con `pdfjs-dist` y se guardan como fondo de plantilla.
+- La plantilla importada guarda un `layout` editable con la imagen/PDF como fondo de hoja.
+- Al importar correctamente, el listado se refresca y muestra la nueva plantilla.
+- Las plantillas ya guardadas abren con estado `Guardado` en vez de mostrar `Borrador`.
+- El botón `Guardar` envía tanto la miniatura (`backgroundUrl`) como el diseño editable (`layout`).
+
+## Editor interno de plantillas
+
+- Se mejoró el autoguardado del editor en `institution/templates/editor`.
+- El editor ahora muestra estado de guardado:
+  - Guardado.
+  - Guardando.
+  - Cambios sin guardar.
+- Los fondos cargados como imagen se guardan como `data URL`, por lo que sobreviven recargas del navegador.
+- Se evitó aceptar PDFs como fondo porque no se renderizan correctamente como imagen de fondo.
+- Se agregó ajuste real del zoom a pantalla disponible.
+- El panel de propiedades ahora muestra acciones rápidas cuando no hay un elemento seleccionado:
+  - Texto.
+  - Variable.
+  - QR.
+  - Imagen.
+- Al crear o seleccionar un elemento, el editor cambia automáticamente a selección y abre el panel de propiedades.
+- Se agregó una barra contextual sobre el elemento seleccionado con acciones directas:
+  - Duplicar.
+  - Bloquear / desbloquear.
+  - Enviar atrás.
+  - Traer adelante.
+  - Quitar.
+- Se agregaron atajos visibles para mejorar descubrimiento:
+  - `Ctrl+S` guardar.
+  - `Ctrl+Z` deshacer.
+  - `Ctrl+D` duplicar.
+  - `Shift + arrastrar` mantiene proporción.
+- Se aplicó una mejora visual general de la interfaz:
+  - Barra superior con mayor jerarquía y profundidad.
+  - Ribbon más integrado al estilo Tessera.
+  - Rail lateral con estados activos más claros.
+  - Área de lienzo con fondo tramado, mejor sombra y mejor separación visual.
+  - Paneles laterales, headers, grupos y controles con bordes, foco y hover más consistentes.
+- Se rediseñó la interfaz del editor para acercarla a una herramienta profesional tipo Figma/Canva:
+  - Topbar más compacta y premium con fondo navy, botón de guardado en gradiente azul/índigo y acciones uniformes.
+  - Toolbar superior con grupos tipo card para mejorar lectura y organización.
+  - Sidebar izquierda ampliada con icono y texto para que las acciones sean más descubribles.
+  - Navegación lateral organizada por elementos, capas, variables, plantillas, texto, formas, líneas, íconos, QR, firmas e imágenes.
+  - Workspace central con gradiente oscuro, grilla sutil, hoja centrada, borde azul suave y sombra más amplia.
+  - Statusbar inferior más alta y clara, mostrando página, elementos, tipo seleccionado, posición, tamaño, rotación y zoom.
+  - Panel derecho ampliado con secciones/card más separadas para contenido, capa, posición, tipografía y color.
+  - Estados hover/active, bordes azulados e inputs oscuros se unificaron visualmente.
+- Se mejoró la presentación inicial del certificado:
+  - Fondo visual con profundidad radial/lineal dentro de la hoja.
+  - Marcos decorativos sutiles.
+  - Ornamentos superiores e inferiores.
+  - Título con mayor espaciado.
+  - QR en card blanca más realista.
+  - Sello con vidrio/transparencia y sombra más elegante.
+- Se reforzó el estado de selección:
+  - Borde azul eléctrico con resplandor.
+  - Handles más visibles.
+  - Toolbar flotante con bordes y fondo alineados al nuevo estilo.
+- Se corrigieron las acciones superiores del editor:
+  - Descargar PDF ahora genera un archivo automáticamente usando solo la hoja del certificado.
+  - El PDF respeta el tamaño y orientación configurados en el tipo de papel activo.
+  - Imprimir abre una vista dedicada de impresión con solo el certificado, evitando capturar toda la pantalla del editor.
+  - Vista previa ahora genera una previsualización real del certificado en un modal.
+  - Descargar PNG ahora exporta solo la hoja del certificado.
+  - Se eliminó el botón de guardado duplicado de la topbar y se dejó una acción principal de guardar con estado visible.
+  - La captura de exportación oculta selección, handles y modo recorte para que el archivo salga limpio.
+- Se refinó la impresión y vista previa del editor:
+  - Imprimir ya no abre una pestaña/página nueva; usa un iframe oculto para disparar el diálogo de impresión.
+  - El modal de vista previa ahora también se puede cerrar desde el fondo y el botón Cerrar fuerza el cierre de la vista.
+  - Se quitó el bloque decorativo `halo` del certificado inicial y se filtra de plantillas guardadas antiguas para evitar superposiciones.
+  - El sello `TSR` dejó de usar `backdrop-blur` y fondo translúcido para que no aparezca una mancha difuminada en PDF o preview.
+- Se corrigió el flujo final de guardado del editor:
+  - El autoguardado sigue funcionando como borrador local.
+  - El botón principal `Guardar` ahora crea una plantilla real usando `createTemplateAction`.
+  - Se genera una miniatura liviana del certificado y se guarda como `backgroundUrl`.
+  - El badge superior cambia de `Borrador` a `Guardando` y luego `Guardado`.
+  - Al guardar correctamente, se elimina `tessera.template-editor` de `localStorage`.
+  - Después del guardado, el editor restablece el diseño por defecto y redirige a `/institution/templates`.
+  - El endpoint de creación de plantillas ahora acepta previews `data:image/*` además de URLs normales.
+- Se ajustó el redimensionado con mouse dentro del editor:
+  - Los elementos de texto también respetan ancho y alto editables.
+  - El resize compensa el nivel de zoom activo.
+  - Los handles norte/oeste actualizan tamaño y posición de forma más natural.
+  - Al redimensionar textos, variables, firmas o sellos también escala el tamaño de letra.
+  - Los layouts importados desde PDF se sanitizan para evitar valores `NaN` en controles del editor.
+  - La descarga PDF usa las dimensiones reales de la captura antes de construir el archivo para evitar distorsiones o rotaciones incorrectas.
+
+## Ajustes de autenticación, admin y emisión
+
+- Se ajustó `/register` para que el contenedor tenga más altura visual y respiración en el formulario.
+- En `/register` se aumentó levemente el espaciado entre caracteres del campo `Tu nombre` para que el ingreso sea más legible.
+- En `/login` se agregó mayor separación visual entre caracteres en los campos de email y contraseña.
+- El email de login y registro ahora se normaliza con `trim()` para evitar errores por espacios al inicio o final.
+- El mensaje de error de login ya no anticipa el límite desde el primer error de contraseña.
+- El login permite 5 intentos fallidos por IP dentro de una ventana de 12 minutos.
+- El login ahora llama primero al API y muestra errores específicos de credenciales, rate limit o servicio/base no disponible.
+- El frontend muestra el tiempo real de espera devuelto por el API para rate limit.
+- El manejador global del API devuelve `503 DATABASE_UNAVAILABLE` cuando Postgres rechaza la conexión, en lugar de un `500` genérico.
+- El manejador global del API reconoce `RATE_LIMIT_EXCEEDED` emitido por `@fastify/rate-limit` y responde `429` en vez de `500`.
+- La permanencia de sesión se redujo de 7 días a 12 horas tanto en NextAuth como en el JWT del API.
+- El registro ahora genera y envía un código de verificación de email con Resend.
+- Se agregó `POST /v1/auth/verify-email` para validar códigos de 6 dígitos con expiración de 12 minutos.
+- En entornos sin `RESEND_API_KEY`, el servicio de email conserva el modo mock/log para no bloquear desarrollo local.
+- El seed de base conserva las 4 cuentas demo por defecto: admin plataforma, admin institucional, docente y estudiante.
+- El registro institucional exige email institucional y rechaza dominios personales comunes.
+- Las instituciones nuevas se crean con estado `pending` y no quedan aprobadas automáticamente.
+- El login institucional/docente se bloquea mientras la institución asociada no esté aprobada.
+- En admin instituciones:
+  - El botón `Revisar` del inicio de admin ahora enlaza al detalle de la institución pendiente.
+  - El botón `Ver` ahora abre `/admin/institutions/[id]`.
+  - La cola de pendientes ahora incluye `Revisar` como link real al detalle.
+  - Se agregó el endpoint `GET /v1/admin/institutions/:id`.
+  - Se agregaron acciones reales para aprobar o rechazar instituciones pendientes.
+  - El detalle de una institución pendiente permite aprobar o rechazar desde la misma pantalla.
+  - El detalle de una institución aprobada permite suspenderla desde la acción superior `Suspender institución`.
+  - Se agregó `POST /v1/admin/institutions/:id/suspend`, que cambia el estado a `suspended` y registra `suspendedAt`.
+  - Se agregó `POST /v1/admin/institutions/:id/reactivate` para volver a activar instituciones suspendidas.
+  - En el listado de instituciones se agregó una columna de suspensión con acción por icono solo para instituciones aprobadas/suspendidas.
+  - La acción de suspensión cambia color e icono según el estado y tacha el nombre cuando la institución está suspendida.
+  - La suspensión de instituciones exige una razón textual obligatoria desde el modal y desde el API antes de ejecutarse.
+  - El modal de suspensión de instituciones se ajustó a una composición amplia tipo Tessera: encabezado con icono grande, entidad seleccionada en bloque destacado, textarea protagonista, contador de caracteres, aviso informativo y footer con acciones claras.
+  - Se compactaron dimensiones, alineación y espaciado del modal de suspensión para evitar scroll interno innecesario en escritorio.
+  - El botón de suspensión del listado de instituciones usa el mismo tratamiento rojo que el listado de usuarios.
+  - Se agregó `suspension_reason` en `institutions` con migración `0007_institution_suspension_reason.sql`.
+  - Tabla modificada: `institutions`; atributos involucrados en suspensión: `status`, `suspended_at`, `suspension_reason`, `updated_at`.
+  - Al reactivar una institución se limpia `suspendedAt` y `suspensionReason`.
+  - Al suspender una institución aprobada también se suspenden automáticamente sus encargados con rol `institution_admin`.
+  - La suspensión automática de encargados usa la razón `Institución suspendida: ...` para diferenciarla de suspensiones manuales.
+  - Al reactivar una institución se reactiva también a sus encargados con rol `institution_admin` que sigan suspendidos y no estén eliminados.
+  - No se modifica el estado de los cursos al suspender la institución; se bloquea su operación por estado institucional para conservar historial y datos.
+  - Los docentes de una institución suspendida ven el aviso `Esta institución ha sido suspendida` y se bloquean las acciones de cursos, estudiantes y calificaciones.
+  - Los estudiantes conservan su cuenta y sus certificados; los cursos asociados a una institución suspendida quedan visibles con aviso y sin acceso al aprendizaje hasta la reactivación.
+  - La emisión y revocación de certificados por panel o API key se bloquea si la institución está suspendida o revocada.
+  - No se agregó migración en esta iteración: se reutilizan `institutions.status`, `institutions.suspended_at`, `institutions.suspension_reason`, `users.restricted`, `users.restricted_at` y `users.restriction_reason`.
+  - La cola de aprobación de instituciones conserva solo la acción `Revisar`; aprobar/rechazar queda dentro del detalle.
+  - La vista de detalle muestra país, plan, estado, wallet, miembros y certificados por estado con datos reales.
+  - El país se muestra como nombre legible cuando viene como código ISO.
+- En admin usuarios se agregaron filtros por texto, rol y estado usando el componente `Select` de Tessera.
+- En admin usuarios:
+  - El botón de suspender/reactivar ahora ejecuta una acción real contra el API.
+  - Se agregaron `POST /v1/admin/users/:id/restrict` y `POST /v1/admin/users/:id/unrestrict`.
+  - La suspensión de usuarios exige una razón textual obligatoria desde el modal y desde el API antes de ejecutarse.
+  - El modal de suspensión de usuarios se ajustó a una composición amplia tipo Tessera: encabezado con icono grande, usuario seleccionado con avatar/iniciales, textarea protagonista, contador `0/300`, aviso informativo, foco por teclado y acciones primarias en azul.
+  - Se corrigieron ancho, altura, eje de alineación izquierdo, avatar, textarea, aviso y footer del modal para ajustarlo a un formato compacto de `640px`.
+  - El botón de suspensión se habilita apenas existe una razón no vacía; API y UI rechazan solo motivos en blanco.
+  - Se agregó `restriction_reason` en `users` con migración `0006_user_restriction_reason.sql`.
+  - Tabla modificada: `users`; atributos involucrados en suspensión: `restricted`, `restricted_at`, `restriction_reason`, `updated_at`.
+  - El botón cambia color e icono según el estado y tacha el nombre cuando el usuario está suspendido.
+  - El botón de eliminar cuenta ahora realiza baja lógica con `deletedAt` desde `DELETE /v1/admin/users/:id`.
+  - Se agregó un modal de confirmación reutilizable para reactivar usuarios suspendidos y confirmar eliminación de cuentas.
+  - Reactivar usuario ya no ejecuta directamente desde el icono; ahora confirma la cuenta seleccionada, explica el alcance y evita envíos duplicados mientras procesa.
+  - Eliminar usuario también pasa por el mismo modal de confirmación antes de llamar al flujo existente de baja lógica.
+  - Una cuenta suspendida puede iniciar sesión, pero ve una pantalla de espera Tessera que bloquea el workspace.
+  - La pantalla de suspensión se compactó en un único panel central con motivo, seguridad, pasos breves y acciones inferiores.
+  - La solicitud de revisión vuelve a usar un formulario interno compacto dentro del panel y envía la explicación por Resend.
+  - La explicación para revisión muestra asterisco de obligatorio e informa que requiere al menos 20 caracteres para activar el envío.
+  - La pantalla de suspensión bloquea envíos duplicados de revisión desde la interfaz y deja el botón en estado `Solicitud enviada`.
+  - El botón de solicitud muestra estado de carga para indicar que el envío está en proceso.
+  - `POST /v1/auth/restricted-appeal` vuelve a estar disponible para enviar la justificación al correo `EMAIL_REPLY_TO`.
+  - `POST /v1/auth/restricted-appeal` limita a una solicitud por ventana de 10 días para evitar spam hacia soporte.
+  - `requireAuth` bloquea las rutas protegidas a usuarios suspendidos, excepto `auth/me` y la apelación de suspensión.
+  - Los filtros de gestión de usuarios se aplican automáticamente al escribir, cambiar rol o cambiar estado.
+  - Se quitó el botón `Filtrar`; `Limpiar` conserva el estilo primario del botón anterior.
+  - El listado admin de usuarios ahora recibe y filtra estados adicionales desde campos reales de `users`: email pendiente, eliminación programada y eliminado.
+  - Los botones de suspender/reactivar y eliminar se ocultan para usuarios con rol `institution_admin`; ese estado se gestiona desde la suspensión o reactivación de la institución asociada.
+  - El listado admin de usuarios ahora usa paginación real desde base de datos.
+  - `GET /v1/admin/users` acepta `page`, `limit`, `role`, `status` y `q`; el frontend solicita lotes de 15 usuarios por página.
+  - Los filtros de búsqueda, rol y estado se aplican en el API antes de calcular el lote y el total paginado.
+  - La UI muestra controles `Anterior` y `Siguiente`, conserva filtros entre páginas y vuelve a página 1 cuando cambia un filtro.
+  - La consulta paginada carga primero usuarios únicos y luego resuelve instituciones del lote, evitando filas duplicadas por múltiples membresías institucionales.
+  - `GET /v1/admin/users` ahora devuelve `institutions[]` con todas las instituciones relacionadas al usuario, además de mantener `institution` como compatibilidad.
+  - La relación de instituciones en usuarios considera equipo institucional, estudiantes institucionales, inscripciones a cursos y docentes asignados a cursos.
+  - La tabla admin muestra múltiples instituciones con chips compactos y contador `+N` cuando hay más de dos.
+  - La búsqueda por institución en gestión de usuarios contempla todas esas relaciones, no sólo la membresía directa.
+  - No se agregó migración en esta iteración: se reutilizan `users.email_verified_at`, `users.deletion_scheduled_at`, `users.deleted_at`, `users.restricted`, `users.restricted_at` y `users.restriction_reason`.
+- En admin certificados se reemplazó el listado principal por gráficas/resúmenes por estado e institución, más una actividad reciente compacta.
+- Se creó una definición compartida de planes en `apps/web/src/lib/plans.ts`.
+- Las páginas pública de precios y el panel institucional de plan ahora consumen la misma fuente para cuotas, precios y features.
+- La grilla visible de planes se unificó con el catálogo vigente de planes.
+- Las pantallas de institución, revenue, settings, docente y admin usan la misma fuente compartida para mostrar nombres de planes.
+- `pro_extended` queda como compatibilidad interna para datos/API existentes, pero ya no aparece como plan comercial separado.
+- La sección de paquetes de créditos se extrajo a `apps/web/src/components/sales/credit-bundles-section.tsx`.
+- La sección de paquetes de créditos usa utilidades de formato client-safe desde `@/lib/format`.
+- En el equipo institucional se quitó la opción de asignar `Admin` desde la UI; quedan roles operativos `Docente` y `Revisor`.
+- Se cambió la comunicación visible de costos de emisión de `MATIC` a tokens/créditos Tessera.
+- En emisión de certificados:
+  - El endpoint de inscripciones de curso devuelve `walletAddress`.
+  - El wizard precarga estudiantes de cursos desde el server.
+  - En carga manual se agregó un select para agregar estudiantes desde `students-courses`.
+  - Al elegir un estudiante se autocompletan nombre, email, wallet, curso, fecha y puntaje cuando existen.
+  - La wallet sigue usando el valor ingresado si se completa; si se deja vacía, el backend intenta resolverla por email registrado.
+- En plantillas importadas desde PDF/imagen:
+  - Las imágenes se guardan como fondo limpio sin crear campos por defecto encima.
+  - Los PDFs intentan leer widgets/campos del documento y convertirlos en bloques editables tokenizados.
+  - Los PDFs descargados desde el editor Tessera embeben un marcador interno con el layout editable, para poder reimportarlos como plantilla editable.
+  - Al importar PDFs propios de Tessera, el importador restaura páginas y bloques desde ese marcador en vez de tratarlos solo como imagen de fondo.
+  - El fondo renderizado de PDFs omite annotations/campos de formulario para evitar que el contenido aparezca duplicado junto a los bloques editables.
+  - Si un PDF no trae campos detectables, se conserva como fondo sin agregar bloques base para evitar duplicar textos ya dibujados en el documento.
+  - El wizard detecta campos desde los tokens del layout.
+  - El certificado muestra solo los campos detectados en la plantilla cuando existe layout editable.
+- En el aside visual de auth:
+  - Se eliminó el chip superior `Workspace institucional`.
+  - Se restauró la tarjeta visual del certificado a su diseño previo y sólo se agregó más padding inferior interno.
+  - Se aumentó nuevamente el padding inferior de la tarjeta para que el hash no quede pegado al borde.
+- En instituciones pendientes:
+  - Al crear una cuenta institucional, el registro inicia sesión automáticamente y entra al workspace en estado pendiente.
+  - El login ya no se bloquea por estado `pending`; pueden ingresar al workspace.
+  - El menú bloquea `Cursos`, `Certificados` y `Badges` con ayuda al pasar el cursor hasta que la institución sea aprobada.
+  - Las páginas de Cursos, Certificados y Badges muestran un aviso de aprobación pendiente si se accede por URL directa.
+  - El workspace institucional consulta el estado de aprobación en cliente mientras está pendiente usando el token inicial del layout y desbloquea Cursos, Certificados y Badges sin requerir refresh cuando el admin aprueba la institución.
+  - Las acciones admin de aprobar, rechazar, suspender y reactivar instituciones también revalidan las rutas principales del workspace institucional.
+- En registro institucional se reforzó la validación de email institucional en frontend y API, ampliando dominios personales bloqueados.
+- En el editor de plantillas:
+  - La barra superior ya no muestra `QR` ni `Tabla` dentro de `Multimedia`.
+  - `Capas`, `Variables` y `Plantillas` se movieron a la sección superior como accesos de panel.
+  - El panel abierto por esos accesos ahora aparece en la sección derecha, con botón `X` para cerrarlo y volver a `Propiedades`.
+  - Se quitó el selector lateral izquierdo y se eliminaron las acciones rápidas del panel de propiedades sin selección.
+  - Al importar una plantilla ya no se muestra el chip verde de éxito; solo se conservan mensajes de error.
+
+## Ajustes de inscripción a cursos
+
+- Se agregó inscripción real para cursos públicos gratuitos desde el detalle público del curso.
+- Se agregó `POST /v1/public/courses/:id/enroll` para que estudiantes autenticados se inscriban en cursos `public_free` publicados.
+- El botón `Inscribirme gratis` ya no sólo envía al login: si el usuario tiene sesión de estudiante crea la inscripción y redirige al curso; si no tiene sesión, vuelve al mismo detalle luego de autenticarse usando `next`.
+- La página pública de canje de código ahora también usa `next` al redirigir al login, respetando el parámetro que ya espera `/login`.
+- El canje de código queda limitado a usuarios con rol `student`, evitando inscripciones con cuentas docentes/admin.
+- La inscripción manual desde institución rechaza correos que pertenecen a cuentas que no son estudiantes.
+- La inscripción manual ahora registra al estudiante en `institution_students` para que los cursos híbridos puedan validar pertenencia institucional.
+- No se agregó migración en esta iteración: se reutilizan `enrollments`, `module_progress` e `institution_students`.
+
+## Ajustes para docentes e instituciones suspendidas
+
+- El listado `teacher/courses` vuelve a mostrar cursos asignados aunque la institución esté suspendida.
+- El API docente de cursos devuelve `institutionStatus` e `institutionSuspensionReason` para renderizar el bloqueo en la interfaz.
+- Los cursos de instituciones suspendidas se muestran con badge `Suspendida`, aviso textual y acción `Bloqueado` sin enlace al detalle.
+- La apertura del detalle y las operaciones docentes siguen protegidas por la validación de institución activa.
+- Reactivar una institución ahora muestra modal de confirmación antes de quitar la suspensión, igual que la reactivación de usuarios.
+- Las acciones admin de suspensión/reactivación de instituciones revalidan vistas de institución, estudiante y docente.
+- Las vistas de estudiante y `teacher/courses` se refrescan automáticamente mientras existan cursos bloqueados por institución suspendida, para desbloquearlos cuando el admin reactive la institución.
+- No se agregó migración en esta iteración: se reutilizan `institutions.status` e `institutions.suspension_reason`.
+
+## Segundo registro institucional
+
+- Se agregó un segundo registro detallado para instituciones nuevas desde `institution/settings`.
+- Mientras una institución esté `pending` y no tenga el perfil detallado enviado, el workspace bloquea la navegación y redirige a `Configuración`.
+- Tras registrar o iniciar sesión con una institución pendiente sin perfil detallado, el usuario va directo a `institution/settings` para evitar el rebote visual desde el inicio.
+- El menú institucional queda bloqueado excepto `Perfil` hasta completar la validación institucional.
+- El formulario de configuración ahora solicita datos públicos, legales, dirección, contacto institucional y registro/acreditación.
+- `Sitio web` y `Descripción` se marcaron como obligatorios con asterisco, igual que el resto de campos requeridos para revisión.
+- Se agregaron validaciones reutilizables en frontend para URL, email, teléfono, mínimos de texto y campos obligatorios del perfil institucional.
+- El teléfono institucional bloquea letras al escribir/pegar y aclara que la extensión o interno debe agregarse como número al final.
+- El campo `Responsable institucional` bloquea números al escribir/pegar.
+- El API valida también descripción mínima y teléfono antes de actualizar el perfil institucional.
+- El API valida que `Responsable institucional` no contenga números.
+- Norma de selects: las opciones nominales se muestran alfabéticamente. Se ordenaron país, roles/estados de filtros admin, idioma, cursos, plantillas, fuentes y tamaños de hoja.
+- Al completar todos los campos obligatorios y guardar, el API marca `profile_submitted_at` para enviar la institución a revisión administrativa.
+- El admin no puede aprobar una institución pendiente si todavía no tiene `profile_submitted_at`.
+- El dashboard y listado admin sólo muestran instituciones pendientes cuando ya tienen `profile_submitted_at`; las creadas con registro básico no aparecen todavía como pendientes de aprobación.
+- La vista de detalle admin de institución muestra el bloque `Registro detallado para revisión` con los datos enviados.
+- Migración agregada: `packages/db/drizzle/0008_institution_detailed_profile.sql`.
+- Tabla modificada: `institutions`.
+- Atributos agregados en `institutions`:
+  - `legal_name varchar(240)`.
+  - `tax_id varchar(80)`.
+  - `address_line varchar(240)`.
+  - `city varchar(120)`.
+  - `state_region varchar(120)`.
+  - `postal_code varchar(40)`.
+  - `contact_name varchar(200)`.
+  - `contact_email varchar(255)`.
+  - `contact_phone varchar(60)`.
+  - `accreditation_id varchar(120)`.
+  - `profile_submitted_at timestamp with time zone`.
+
+## Rechazo y reevaluación de instituciones
+
+- El rechazo de instituciones pendientes ahora exige un comentario obligatorio desde el modal reutilizado de motivo.
+- `POST /v1/admin/institutions/:id/reject` valida que la institución esté `pending`, que haya enviado su perfil detallado y que el comentario no esté vacío.
+- El comentario de rechazo queda persistido para mostrarse a la institución afectada.
+- La reevaluación ya no puede dispararse manualmente desde admin apenas se rechaza; la institución debe corregir y guardar su perfil para volver a `pending`.
+- Al aprobar o reenviar el perfil corregido se limpian los datos de rechazo correspondientes.
+- El detalle admin de institución muestra:
+  - Rechazar con comentario obligatorio para instituciones pendientes.
+  - Estado de espera para instituciones rechazadas hasta que reenvíen cambios.
+  - Comentario de rechazo en los datos institucionales.
+- El listado admin de instituciones muestra `Esperando cambios` para instituciones rechazadas sin permitir reevaluación inmediata.
+- El inicio institucional y `institution/settings` muestran un aviso superior cuando la institución está rechazada y existe comentario de rechazo.
+- El aviso incluye el comentario informado por el admin y una acción para ir al perfil.
+- Si la institución rechazada corrige y guarda un perfil detallado completo, vuelve automáticamente a `pending` para reevaluación administrativa y se limpia el comentario anterior.
+- El reenvío del perfil actualizado renueva `profile_submitted_at` para diferenciar la tanda corregida de la solicitud rechazada.
+- Los workspaces de institución, docente y estudiante también usan refresco automático cada 10 segundos, además del panel admin, para reflejar cambios de estado sin refresh manual.
+- El menú institucional bloqueado ahora diferencia entre pendiente, suspendida y rechazada en el texto de ayuda.
+- Migración agregada: `packages/db/drizzle/0009_institution_rejection_reason.sql`.
+- Tabla modificada: `institutions`.
+- Atributos agregados en `institutions`:
+  - `rejected_at timestamp with time zone`.
+  - `rejection_reason text`.
+
+## Métricas operativas del panel admin
+
+- El inicio del panel administrativo reemplazó las cards genéricas superiores por cuatro cards operativas alineadas al diseño oscuro de Tessera.
+- Se quitaron el encabezado `Pendientes y alertas`, la descripción, la acción `Ver actividad` y los divisores del bloque para conservar una entrada más compacta.
+- Las cards muestran datos reales separados:
+  - Instituciones por revisar: instituciones `pending` con `profile_submitted_at`.
+  - Esperando correcciones: instituciones `revoked`.
+  - Cuentas suspendidas: usuarios `restricted` no eliminados más instituciones `suspended`.
+  - Emisiones con problemas: certificados `failed` más webhooks `failed`.
+- Cada card incluye estado, descripción y variación contextual real:
+  - Pendientes del mes.
+  - Rechazos de la semana.
+  - Suspensiones del mes.
+  - Fallos de las últimas 24 horas.
+- `GET /v1/admin/dashboard` mantiene los KPIs anteriores y agrega los nuevos conteos operativos sin crear endpoints adicionales.
+- Las cards del inicio admin usan los totales reales de `/admin/institutions` y `/admin/users` como fuente de respaldo para mantener coherencia con lo que se ve en esas secciones.
+- `/v1/admin/institutions` ahora incluye totales separados de instituciones `rejected` y `suspended`, además de `pending` y `approved`.
+- No se agregó migración en esta iteración: se reutilizan `institutions.status`, `institutions.profile_submitted_at`, `institutions.rejected_at`, `institutions.suspended_at`, `users.restricted`, `users.restricted_at`, `users.deleted_at`, `certificates.status`, `certificates.updated_at`, `webhook_events.status`, `webhook_events.last_attempt_at` y `webhook_events.created_at`.
+
+## Ajustes de sesión y suspensión
+
+- El API ahora respeta `JWT_EXPIRES_IN` para definir la duración real del access token; el default quedó en `4h`.
+- `.env.example` se alineó a `JWT_EXPIRES_IN=4h`.
+- `POST /v1/auth/refresh` renueva el JWT mientras el token actual todavía sea válido.
+- NextAuth guarda `accessTokenExpiresAt` y renueva el token cuando está cerca de vencer, evitando expulsar al usuario activo.
+- Si el usuario vuelve con un token ya vencido, el header público valida `/v1/auth/me`, limpia la sesión local y muestra `Iniciar sesión` / `Crear cuenta` en vez del menú de usuario.
+- La pantalla de cuenta suspendida consulta automáticamente `/v1/auth/me`; cuando se levanta la suspensión refresca la vista para salir del bloqueo.
+- Las cuentas suspendidas pueden usar `/v1/auth/refresh`, `/v1/auth/me` y `/v1/auth/restricted-appeal` para mantener visible el estado y solicitar revisión sin desbloquear acciones protegidas.
+- El panel administrativo refresca automáticamente cada 10 segundos mientras la pestaña está visible y al recuperar foco.
+- En el detalle admin de institución, el sitio web ahora se muestra como enlace externo y abre en una nueva pestaña.
+- El inicio admin muestra una leyenda clara cuando no hay instituciones pendientes de aprobación.
+- La gestión admin de usuarios ya no permite eliminar cuentas desde el listado; la eliminación queda como acción personal de cada usuario no administrador.
+- La columna de acción en gestión admin de usuarios ahora se titula `Suspensión`, igual que en instituciones.
+- Los estudiantes en gestión admin de usuarios tienen botón `Ver` para revisar el perfil detallado antes de aprobarlo o rechazarlo.
+- Se agregó `GET /v1/admin/users/:id` y la vista `/admin/users/[id]` con datos personales, instituciones relacionadas y acciones de revisión para perfiles pendientes.
+- Se agregó eliminación personal con modal de confirmación para estudiantes, docentes e instituciones.
+- Si un administrador institucional solicita eliminar su cuenta, el API programa la eliminación lógica del usuario y marca la institución asociada como `revoked` con motivo operativo.
+- El administrador global no puede eliminar su propia cuenta desde el flujo de privacidad.
+- Las cards superiores de instituciones, certificados, usuarios, alertas y Health API adoptan el diseño operativo compacto del inicio admin.
+- Health API muestra las tecnologías reportadas actualmente por `/v1/health`: PostgreSQL, Redis, Polygon RPC, Arweave, Signer, PayPal Webhook, Object Storage y Resend Email.
+- El refresco automático global ahora se pausa mientras el usuario edita formularios o mantiene foco en campos editables, evitando pérdida de datos antes de enviar.
+- El menú de estudiantes replica el bloqueo preventivo del perfil institucional: si el perfil está incompleto sólo queda habilitado `Perfil`; si ya fue enviado y está pendiente/rechazado, `Inicio` y `Mis cursos` quedan bloqueados hasta aprobación global.
+- En admin, el estado visible de estudiantes ya no muestra `Activo` hasta que el perfil esté aprobado; antes aparece como `Pendiente de perfil`, `Pendiente de aprobación` o `Corrección requerida`.
+- Cuando el estudiante figura como `Pendiente de perfil`, se oculta el chip redundante `Perfil incompleto` en el listado admin.
+- El botón de suspensión del listado admin de usuarios queda centrado en su columna.
+- Se extrajo el calendario Tessera a `components/ui/tessera-date-input.tsx` y ahora se reutiliza en la carga manual de certificados y en la fecha de nacimiento del perfil detallado.
+- El calendario Tessera admite navegación por año en fechas de nacimiento para evitar avanzar mes por mes.
+- En admin/users, las acciones de aprobar o rechazar estudiantes pendientes quedan sólo en la vista `Ver` del estudiante.
+- El botón de suspensión de estudiantes queda visible pero deshabilitado mientras el perfil no esté aprobado.
+- En admin/users, los estudiantes ya no muestran un segundo chip de perfil cuando el estado principal ya comunica que están pendientes, rechazados o con perfil incompleto.
+- En admin/users, se retiran los filtros visibles de `Email pendiente` y `Eliminación programada` porque el registro actual crea cuentas sólo tras verificar email y la eliminación programada queda como dato técnico.
+- En admin/users, `Activo` queda reservado para cuentas operativas; estudiantes y docentes con perfil requerido incompleto, pendiente o rechazado muestran ese estado de perfil como estado principal.
+- En admin/users, los estudiantes y docentes con perfil aprobado muestran sólo el chip `Activo`, sin repetir `Perfil aprobado`.
+- El motivo de suspensión institucional queda visible sólo para la institución y el admin; estudiantes, docentes y revisores ven únicamente el aviso genérico de institución suspendida.
+- Las solicitudes de revisión de suspensión mantienen el mensaje completo únicamente por email a soporte.
+- Al enviar una solicitud de revisión de suspensión se registra sólo una señal operativa en `audit_log` (`restricted_appeal.submitted`) con email, rol, destino y correo de soporte, sin guardar la explicación escrita por el usuario.
+- El admin agrega la vista `Revisión de suspensión` para ver qué usuarios o instituciones suspendidas ya escribieron a soporte y marcar la señal como revisada.
+- El inicio admin muestra las peticiones abiertas de retiro de suspensión y las suma a los asuntos que requieren revisión.
+- En la pestaña de docentes de un curso, la cuenta actual del admin institucional ya no aparece como elegible en `Asignar nuevo docente`, evitando confusión cuando es la única persona del equipo.
+- El listado de cursos ahora calcula inscripciones con una agregación explícita por curso, para que coincida con el detalle del curso.
+- La pestaña de docentes del curso pasa a presentarse como `Personal`, incluye docentes y revisores elegibles, y fuerza a los revisores como asistentes del curso.
+- Las invitaciones por email al equipo permiten elegir de entrada si la persona será docente o revisor.
+- En el personal de un curso se fusionan las acciones de asignar e invitar: el panel `Docente o revisor` permite escribir un email o seleccionar una card del equipo elegible.
+- Si el email escrito coincide con un miembro elegible del equipo, se asigna al curso; si no coincide, se envía una invitación con el rol docente/revisor indicado.
+- Al seleccionar una persona ya existente del equipo, el rol por defecto se toma desde su perfil institucional, pero puede cambiarse sólo para ese curso sin alterar el rol del equipo.
+- La API de asignación de personal a curso permite que el rol operativo del curso sea independiente del rol institucional del miembro.
+- Las etiquetas visibles de rol de curso se muestran como `Docente/Revisor` en lugar de exponer los valores técnicos `owner/assistant`.
+- Los docentes pueden pertenecer a más de una institución y aceptar invitaciones de cursos de otras instituciones.
+- El acceso docente a cursos deja de depender de la primera membresía institucional encontrada y se valida por asignación real en `course_teachers`.
+- El layout docente deja de bloquear el menú completo por el estado de una única institución; el bloqueo queda por curso/institución en las vistas correspondientes.
+- Al inscribir estudiantes desde un curso, la relación institucional se guarda contra la institución real del curso y no contra la primera membresía del docente.
+- El login con link de invitación ya no redirige al panel docente si la aceptación falla; muestra el error y detiene el flujo.
+- El login con link de invitación acepta automáticamente la invitación si el docente ya tenía una sesión activa, para actualizar sus cursos asignados sin pedir credenciales otra vez.
+- Si una invitación docente no viene asociada a un curso, tras aceptarla redirige al perfil docente para mostrar la nueva institución vinculada.
+- La aceptación de invitaciones docentes se vuelve idempotente para el mismo email: si el link ya fue aceptado, devuelve la membresía/asignación existente en lugar de tratarlo como expirado.
+- Las invitaciones docentes vigentes pueden reintentarse hasta su expiración de 7 días; el endpoint de aceptación ya no exige `accepted_at IS NULL` para poder reconstruir o devolver la asignación existente del mismo email.
+- La aceptación valida que el curso invitado exista y pertenezca a la institución que emitió la invitación.
+- El listado docente `Mis cursos` mantiene cursos asignados en borrador y centra las métricas numéricas de la tabla.
+- Los resúmenes docentes cambian el texto de cursos asignados para indicar que el total incluye borradores.
+- El perfil docente muestra todas las instituciones donde participa el usuario, con rol, estado y cantidad de cursos asignados por institución.
+- El email de invitación al equipo ahora informa el nombre de la institución/equipo y el rol asignado.
+- El asunto del email de invitación directa al equipo usa el nombre real del equipo en lugar de `Tessera`.
+- Se elimina el campo `Nombre` de las invitaciones por email; el nombre real se toma cuando la persona acepta y completa su cuenta.
+- El modal de invitación enviada desde `Equipo` deja de mostrar el link local de desarrollo; el acceso se comunica únicamente por email.
+- `Institución > Equipo` agrega la opción `Ver` en cada integrante para abrir un modal de perfil con datos personales existentes, wallet, rol, estado del perfil y fecha de incorporación.
+- `/v1/me/team` cruza `user_profiles` para exponer el perfil de los integrantes sin agregar nuevas tablas ni migraciones.
+- La acción de quitar integrantes del equipo deja de usar `window.confirm` y reutiliza el modal Tessera de confirmación con la variante `Quitar integrante`.
+- En `Institución > Equipo`, la opción `Ver` ya no aparece para la propia cuenta del admin institucional.
+- Las cuentas docentes creadas desde invitación ahora reciben `walletAddress`; si una cuenta docente existente acepta o reintenta una invitación y no tenía wallet, el backend la completa automáticamente.
+- El nombre ingresado al crear una cuenta docente por invitación se precarga también en `user_profiles.first_name` y `user_profiles.last_name`, para que el formulario de perfil reutilice esos datos.
+- En el personal de un curso, los badges diferencian `Curso: Docente/Revisor` de `Equipo: Docente/Revisor` para evitar confundir rol operativo y rol institucional.
+- `Institución > Equipo` agrega historial de invitaciones por email con estado `Pendiente`, `Aceptada` o `Expirada`, rol invitado, curso asociado cuando exista, fecha de envío y fecha de aceptación.
+- Se agrega `GET /v1/me/team/invitations`, leyendo desde `team_invitations` y cruzando opcionalmente con `courses` y `users` para mostrar curso y creador.
+- El historial de invitaciones se pagina desde API en lotes de 15 registros usando `page`, `limit`, `total` y `totalPages`.
+- No se agregan migraciones: el historial usa la tabla existente `team_invitations` con `accepted_at`, `expires_at`, `created_at`, `course_id`, `member_role` y `created_by`.
+- El middleware web permite entrar a `/login` o `/register` con parámetro `invite` aunque exista sesión activa, para que el cliente pueda aceptar invitaciones docentes de otras instituciones antes de redirigir al panel.
+- Se agrega la ruta puente `/accept-invite`: cuando un usuario con sesión activa abre un link de invitación, acepta la invitación del lado servidor y redirige sin mostrar momentáneamente el formulario de login.
+- `Mis cursos` del espacio docente agrega la columna `Institución` junto a `Estado`, usando el nombre real devuelto por `/v1/me/teacher/courses`.
+- En el perfil docente, la sección `Cursos a mi cargo` muestra la institución a la que pertenece cada curso.
+- En `Docente > Estudiantes`, se quita el botón `Filtrar`; el buscador y el selector de curso aplican filtros automáticamente mientras se escribe o se cambia de curso, manteniendo sólo la acción `Limpiar`.
+- En el detalle del estudiante docente, las cards de resumen pasan a una fila propia con más espacio y padding para evitar que queden comprimidas.
+- En `Institución > Cursos > Estudiantes`, el alta manual quita el campo visible de nombre y deja sólo el email para inscribir.
+- El email de invitación a personal de curso incluye el nombre del curso cuando la invitación viene desde un curso específico.
+- Se sincronizan `.env` y `.env.example` con las variables actuales del schema de API/web: JWT, Google OAuth opcional, PayPal, signer Web3Signer/OpenBao, webhooks, Arweave Gateway y puerto local de Postgres `5434`.
+- Se elimina el fallback legacy de AWS KMS del signer, health check, schema de env y package del API; el signer queda en Web3Signer/OpenBao o `SIGNER_PRIVATE_KEY` sólo para desarrollo.
+- Se elimina Enterprise como plan operativo: sale del catálogo web, catálogo PayPal, variables de entorno, rate limits visibles, docs institucionales y pantalla de planes. Los valores `enterprise` que quedan son compatibilidad legacy de base/mapeo para datos existentes.
+
+## Verificación de email antes de crear cuenta
+
+- El registro ya no crea usuarios ni instituciones inmediatamente al enviar el formulario.
+- `POST /v1/auth/register` valida los datos, genera el hash de contraseña, guarda un registro pendiente en `verification_tokens` y envía un código de 6 dígitos por email.
+- `POST /v1/auth/verify-email` consume el código de registro y recién ahí crea la cuenta real.
+- Para estudiantes, la verificación crea el usuario con rol `student`, wallet generada y `email_verified_at`.
+- Para instituciones, la verificación crea la institución en estado `pending`, crea el usuario `institution_admin`, marca `email_verified_at` y vincula el miembro administrador.
+- La pantalla de registro muestra un paso intermedio para ingresar el código recibido y bloquea la creación hasta validarlo.
+- Se conservó el flujo anterior de `email_verification` para cuentas ya existentes.
+- Migración agregada: `packages/db/drizzle/0010_verification_token_payload.sql`.
+- Tabla modificada: `verification_tokens`.
+- Atributo agregado en `verification_tokens`:
+  - `payload jsonb`.
+
+## Invitaciones docentes y perfiles detallados
+
+- Los docentes ya no se crean desde `institution/team` con contraseña temporal.
+- La institución envía una invitación por email y se guarda en `team_invitations`.
+- El docente nuevo abre `/register?role=teacher&invite=...`, define contraseña y recién ahí se crea su usuario `teacher`.
+- El docente existente abre `/login?role=teacher&invite=...`, acepta la invitación y se vincula a la institución.
+- Si la invitación incluye curso, el docente se asigna al curso al aceptar la invitación.
+- Si el email ya pertenece a una cuenta con otro rol, la invitación se rechaza y no cambia roles automáticamente.
+- Se agregó invitación directa desde la pestaña `Docentes` del detalle de curso.
+- Estudiantes y docentes ahora tienen perfil detallado obligatorio en `user_profiles`.
+- Los docentes quedan habilitados automáticamente al completar su perfil.
+- Los estudiantes quedan en estado `pending` al completar su perfil y requieren aprobación del admin global.
+- Luego de completar el perfil, el botón de datos detallados de estudiante/docente cambia a `Guardar cambios`, igual que el perfil institucional.
+- El admin puede aprobar o rechazar perfiles de estudiantes desde `admin/users`; el rechazo exige comentario y se muestra al estudiante en su perfil.
+- Los layouts de estudiante y docente bloquean la navegación fuera del perfil mientras el perfil no esté aprobado.
+- El menú docente muestra las opciones deshabilitadas hasta completar el perfil obligatorio y las habilita al quedar aprobado.
+- Al registrar o iniciar sesión como estudiante/docente con perfil incompleto se redirige directo al perfil.
+- Al completar el perfil detallado se revalida `admin/users` y el listado de usuarios tiene refresco automático propio para reflejar perfiles enviados sin refresh manual.
+- El formulario de perfil detallado ahora fuerza un refresh de la ruta después de guardar para sincronizar el estado visible de perfil y navegación.
+- El endpoint admin de usuarios ahora lee `user_profiles` mediante `leftJoin` explícito para que el estado mostrado coincida con el perfil detallado guardado en base.
+- Cuando el perfil ya está completo y el botón muestra `Guardar cambios`, el feedback posterior al guardado se reduce a `Cambios guardados`.
+- Migración agregada: `packages/db/drizzle/0011_user_profiles_team_invitations.sql`.
+- Tablas agregadas:
+  - `user_profiles`.
+  - `team_invitations`.
+- Atributos principales de `user_profiles`:
+  - `user_id uuid`.
+  - `first_name varchar(120)`.
+  - `last_name varchar(120)`.
+  - `document_type varchar(40)`.
+  - `document_number varchar(80)`.
+  - `birth_date date`.
+  - `phone varchar(60)`.
+  - `country varchar(2)`.
+  - `city varchar(120)`.
+  - `address_line varchar(240)`.
+  - `status user_profile_status`.
+  - `profile_completed_at timestamp with time zone`.
+  - `profile_submitted_at timestamp with time zone`.
+  - `approved_at timestamp with time zone`.
+  - `rejected_at timestamp with time zone`.
+  - `rejection_reason text`.
+- Atributos principales de `team_invitations`:
+  - `institution_id uuid`.
+  - `course_id uuid`.
+  - `email varchar(255)`.
+  - `name varchar(200)`.
+  - `member_role varchar(50)`.
+  - `token_hash varchar(255)`.
+  - `expires_at timestamp with time zone`.
+  - `accepted_at timestamp with time zone`.
+  - `created_by uuid`.
+
+## Ajustes de TSC y planes públicos
+
+- Se corrigió el texto desactualizado de wallet institucional: la emisión consume el costo TSC vigente, no `1 crédito`.
+- Se corrigió el comentario interno del worker de emisión para reflejar el débito del costo TSC configurado.
+- La sección pública de planes ahora comunica los planes actuales `Essential`, `Growth`, `Institutional` y `Scale`.
+- La página `/pricing` reutiliza el componente de planes sin duplicar el encabezado/chip de planes.
+- En `/pricing` se redujo el margen vertical entre el encabezado y las cards, y se integró el mensaje de precios honestos al texto principal.
+- El grid público de planes se ajustó para mostrar cuatro planes de forma consistente con el estilo Tessera.
+- Las cards públicas de precios quedan centradas aunque el admin desactive uno o más planes.
+
+## Admin: alertas y certificados
+
+- Las alertas administrativas siguen derivándose de datos reales, pero ahora pueden marcarse como resueltas.
+- Se agregó persistencia mínima para resoluciones de alertas sin duplicar los datos fuente de instituciones, certificados o webhooks.
+- La sección `admin/certificates` ahora consulta certificados por lotes de `15` registros.
+- Los gráficos de certificados por estado e institución ahora se calculan desde el histórico completo y no desde la página actual.
+- El listado de certificados conserva paginación, mientras las cards y gráficos usan totales históricos.
+- Migración agregada: `packages/db/drizzle/0013_admin_alert_resolutions.sql`.
+- Tabla agregada: `admin_alert_resolutions`.
+- Atributos principales de `admin_alert_resolutions`:
+  - `id uuid`.
+  - `alert_id varchar(260)`.
+  - `resolved_by uuid`.
+  - `note text`.
+  - `resolved_at timestamp with time zone`.
+
+## Admin: catálogo de planes y TSC
+
+- Se agregó la sección `Admin > Planes` para configurar planes, paquetes TSC y costo por certificado desde el panel.
+- Al guardar la configuración de planes, la pantalla muestra `Cambios guardados` junto al botón principal durante 5 segundos.
+- El catálogo de planes deja de depender sólo de constantes estáticas: API, pricing público, landing institucional, checkout, créditos y wallet leen la configuración guardada en base.
+- El costo por certificado ahora se lee desde base mediante `certificate_tsc_cost`; el default sigue siendo `2 TSC` sólo como respaldo si no existe configuración.
+- Los paquetes TSC y planes mantienen códigos estables para no romper integraciones ni PayPal, pero el admin puede editar nombre, descripción, precio mensual, descuento, TSC y estado activo.
+- La migración de catálogo queda consolidada en `packages/db/drizzle/0014_billing_catalog.sql`.
+- Tablas agregadas:
+  - `billing_plans`.
+  - `billing_tsc_packages`.
+  - `billing_settings`.
+- Atributos principales de `billing_plans`:
+  - `code varchar(40)`.
+  - `name varchar(100)`.
+  - `description text`.
+  - `monthly_tsc integer`.
+  - `monthly_price_cents integer`.
+  - `launch_discount_bps integer`.
+  - `extra_tsc_price_milli_cents integer`.
+  - `minimum_commitment_months integer`.
+  - `pricing_version varchar(80)`.
+  - `active integer`.
+  - `sort_order integer`.
+  - `updated_at timestamp with time zone`.
+- Atributos principales de `billing_tsc_packages`:
+  - `code varchar(40)`.
+  - `name varchar(100)`.
+  - `tsc integer`.
+  - `price_cents integer`.
+  - `discount_bps integer`.
+  - `validity_months integer`.
+  - `pricing_version varchar(80)`.
+  - `currency varchar(3)`.
+  - `active integer`.
+  - `sort_order integer`.
+  - `updated_at timestamp with time zone`.
+- Atributos principales de `billing_settings`:
+  - `key varchar(80)`.
+  - `value jsonb`.
+  - `updated_at timestamp with time zone`.
+- Valores principales de `billing_settings`:
+  - `certificate_tsc_cost`.
+  - `tsc_nominal_value_cents`.
+  - `continuity_reserve_cents`.
+  - `package_validity_months`.
+  - `pricing_version`.
+- Se adaptó el catálogo administrativo de planes y paquetes TSC al modelo definido en `PRECIOS.md`.
+- El panel `Admin > Planes` permite configurar:
+  - TSC consumidos por certificado.
+  - Valor nominal del TSC en USD.
+  - Reserva de continuidad por certificado.
+  - Vigencia global de paquetes TSC.
+  - Precio mensual por plan.
+  - Descuento por plan.
+  - Precio de TSC adicional por plan.
+  - Descuento por paquete TSC.
+- Se agregó `Enterprise` como plan y paquete configurable, inicialmente inactivo para no alterar la oferta pública ni el checkout self-service.
+- Se reemplaza el doble campo de planes `launch_price_cents`/`price_cents` por `monthly_price_cents`, un nombre más claro para el precio mensual real.
+- El descuento de planes no se calcula ni se elimina: queda guardado como `launch_discount_bps` y sigue siendo editable desde `Admin > Planes`.
+- `monthly_price_cents` guarda el precio mensual base editable; `launch_discount_bps` guarda el descuento editable; el precio mensual final se calcula en interfaz/checkout y no se persiste como columna.
+- En paquetes TSC, `price_cents` guarda el precio base editable y `discount_bps` guarda el descuento editable; el precio final se calcula en interfaz/checkout y no se persiste como columna.
+- La cantidad de TSC de los paquetes queda sólo como cantidad acreditada/listada y no se usa para calcular el precio del paquete.
+- Los nombres de paquetes vuelven a ser editables desde el panel manteniendo códigos internos estables.
+- El panel mantiene visibles sólo los campos editables; los valores calculados quedan derivados en backend y consumos públicos.
+- Las cards de planes se muestran una debajo de otra; nombre, TSC, precio mensual, descuento y TSC adicional quedan en una misma fila y la descripción editable queda debajo con mayor tamaño.
+- La versión de pricing ya no se edita manualmente: se genera automáticamente al guardar la configuración.
+- El estado activo/inactivo de planes y paquetes se muestra con un switch verde Tessera en lugar de checkbox.
+- El botón `Guardar configuración` queda estático al final del formulario para evitar que ocupe pantalla durante la edición.
+- Las cards públicas de precios muestran el precio nominal tachado cuando existe descuento, el precio vigente y un chip Tessera con `Descuento - porcentaje`.
+- Las cards de planes agregan el precio de TSC adicional como dato visible del plan.
+- El chip de descuento se alinea en la misma fila superior del nombre/etiqueta del plan.
+- El precio visible cambia el prefijo `$` por `USD`.
+- Las suscripciones muestran el compromiso mínimo leyendo `minimum_commitment_months` desde base, sin fijar `12` en la interfaz pública.
+- La página pública de precios agrega paquetes TSC debajo de suscripciones para instituciones que prefieren recargas sin suscripción.
+- Los paquetes públicos muestran precio base tachado sólo cuando tienen descuento y calculan el precio final desde `price_cents` + `discount_bps`.
+- Los endpoints público y admin del catálogo devuelven también valor nominal, reserva de continuidad y versión de pricing.
+- El ledger de TSC registra en nuevos movimientos el valor nominal, importe pagado, descuento, versión de pricing, costo por certificado y saldo antes/después.
+- Las compras de paquetes guardan vigencia por meses calendario y conservan el snapshot inmutable usado al momento del pago.
+- Las emisiones y reembolsos guardan el costo TSC aplicado y los saldos antes/después del movimiento.
+- La institución recién registrada ya no se muestra visualmente con un plan contratado por el valor legacy `institutions.plan`.
+- Las vistas de institución, configuración y facturación muestran `Sin suscripción activa` cuando no existe un registro activo en `subscription_entitlements`.
+- Se aplica la nueva identidad visual de Tessera basada en la paleta propuesta:
+  - Midnight Navy `#080D1A`.
+  - Deep Slate `#101827`.
+  - Slate `#172033`.
+  - Indigo Tessera `#6366F1`.
+  - Periwinkle `#8883FF`.
+  - Cyan `#22D3EE`.
+  - Emerald `#22C98A`.
+  - Off White `#F4F6FA`.
+  - Cool Gray `#98A2B3`.
+- El componente central `BrandMark` reemplaza el isotipo anterior por el nuevo simbolo de marca y mantiene el punto del wordmark.
+- Se alinean sombras, CTAs, modales, botones, border beams y fondos puntuales que todavia usaban el azul anterior de Tessera.
+- Se actualiza `BRAND_SYSTEM.md` con el apartado del logo y la guia de uso de tokens para el rebranding.
+- El panel admin de instituciones recibe `activePlanCode` calculado desde `subscription_entitlements` y usa ese valor para mostrar la suscripción real.
+- El perfil del docente deja de mostrar el plan legacy de la institución y muestra que la suscripción es gestionada por la institución.
+- No se modifica PayPal ni el flujo de checkout; este ajuste sólo cambia la fuente usada para representar la suscripción actual.
+- El menú de estudiantes agrega `Cursos disponibles`, que abre el catálogo público `/cursos` en una nueva pestaña para facilitar la inscripción a cursos actuales.
+- Al inscribirse a un curso público o por código, el estudiante queda registrado en `institution_students` para esa institución.
+- Los cursos híbridos permiten inscripción gratuita si el estudiante ya pertenece a la institución por `institution_students` o por una inscripción previa en otro curso de la misma institución.
+- La página pública de detalle de curso híbrido muestra la acción de inscripción como estudiante de la institución y conserva el camino de canje por código.
+- La sección `Institución > Estudiantes` lista estudiantes registrados, inscriptos y destinatarios históricos de certificados; ya no depende únicamente de certificados emitidos.
+- La tabla de estudiantes muestra cantidad de inscripciones y certificados por estudiante.
+- La sección `Institución > Ingresos` ya no usa el plan legacy de la institución para mostrar monetización activa; ahora depende de una suscripción activa en `subscription_entitlements`.
+- Si la institución no tiene suscripción activa, `Ingresos` muestra el estado `Sin suscripción activa` y dirige a `/institution/plan`.
+- La vigencia de paquetes TSC en `Créditos` y `Wallet` se lee desde los bundles configurados en base (`validityMonths`) y deja de estar fija en 12 meses.
+- `Plan y facturación` deja de mostrar una cuota ficticia `0 / 100` cuando no hay suscripción activa y muestra un estado para contratar una suscripción.
+- En `Institución > Equipo`, el selector de rol de miembros admin muestra `Admin` y queda deshabilitado para evitar degradar al dueño de la institución.
+- Los avisos de créditos separan `Sin saldo TSC` de `Saldo TSC bajo`.
+- El saldo bajo ahora se calcula con el costo vigente del certificado desde base: aparece cuando el saldo positivo no alcanza para 10 certificados (`tscPerCertificate * 10`).
+- `Créditos`, `Inicio institucional` y `Wallet` muestran el mensaje correspondiente cuando no hay saldo o cuando el saldo está por debajo del umbral dinámico.
+- En `Certificados > Emitir certificados`, el formulario manual cambia su orden de columnas a `email`, `nombre`, `curso`, `puntaje`, `wallet`.
+- Se elimina la columna manual de fecha: la emisión usa automáticamente la fecha del momento en que se genera el certificado.
+- Se quita el select externo para agregar estudiantes junto al botón `Agregar fila`.
+- La columna `email` ahora funciona como buscador/autocompletado: filtra estudiantes inscritos de la institución mientras se escribe.
+- Si el email coincide con un estudiante de la institución, se autocompletan email, nombre, curso, puntaje y wallet.
+- La wallet queda visible para pruebas pero no editable; si el estudiante no tiene wallet registrada, se usa la wallet institucional como fallback.
+- Si una fila coincide con un estudiante registrado, el nombre queda bloqueado para evitar modificar datos del perfil.
+- La columna curso del formulario manual funciona como campo editable con sugerencias, permitiendo escribir o seleccionar un curso existente.
+- El campo wallet actualiza su valor al seleccionar un estudiante o al usar un email sin coincidencia, tomando la wallet institucional como respaldo.
+- Se quita el botón de ayuda de la cabecera wallet para simplificar la interfaz.
+- El formulario manual permite eliminar filas cargadas por error.
+- Las inscripciones de curso ahora devuelven `walletAddress` del usuario para que la emisión use la wallet real del estudiante cuando existe.
+- El buscador de email conserva una opción por curso inscrito; si un estudiante pertenece a varios cursos, el campo curso permite ver y elegir entre todas sus opciones.
+- Se elimina la tabla de previsualización duplicada del paso de datos para recuperar espacio vertical en el formulario manual.
+- La tabla manual de emisión reserva altura mínima para al menos tres filas, evitando que los desplegables queden encerrados en un área demasiado pequeña.
+- Las columnas requeridas (`email` y `nombre`) se marcan con asterisco rojo en la cabecera y se oculta el mensaje redundante de obligatorio debajo del input.
+- Se amplía el espacio visible de las opciones del buscador de email y del selector editable de curso.
+- El asterisco de requerido se muestra junto al nombre editable de la columna.
+- El buscador de email lista cada estudiante una sola vez, aunque esté inscrito en varios cursos.
+- El selector editable de curso filtra y muestra los cursos asociados al estudiante seleccionado.
+- Los desplegables del formulario manual reducen su ancho máximo y duplican su altura mínima para mostrar más opciones sin ocupar todo el ancho de la tabla.
+- Los desplegables de email y curso ajustan su alto al contenido disponible sin forzar altura mínima cuando hay pocas opciones.
+- El buscador de email deja de mostrar el curso en cada opción; el curso se elige únicamente desde la columna correspondiente.
+- Se quita el texto visible `Fila` del encabezado de acciones de la tabla manual.
+- En el paso de revisión de emisión, si el curso ya fue cargado en los datos, se muestra ese curso en lugar del selector global.
+- El costo estimado de emisión deja de decir `tokens` y muestra `TSC`, usando el costo vigente por certificado leído desde base.
+- Se quita la acción `Imprimir PDF` del paso previo a emitir certificados; la impresión queda reservada para certificados ya generados y para plantillas.
+- En el inicio institucional, el card de estudiantes deja de decir `Estudiantes únicos`.
+- El número de estudiantes del inicio institucional se calcula desde inscripciones reales en cursos (`enrollments`) sin duplicar al mismo estudiante si está en varios cursos.
+- Se revisan los selects del sistema: los encontrados usan el componente compartido Tessera; los selects nativos restantes pertenecen al calendario Tessera.
+- Países y tipos de documento se mantienen ordenados alfabéticamente desde sus listas locales.
+- Se revisan estados vacíos principales en módulos admin, institución, teacher y student; las pantallas relevantes ya muestran mensajes de ausencia de datos.
+- Health API agrega el check de `Pinata / IPFS`, alineado con el stack documentado.
+- Health API usa `ARWEAVE_GATEWAY` configurado para el probe de Arweave en lugar de una URL fija.
+- La vista admin de Health muestra tecnologías actuales con etiquetas más explícitas: `Web3Signer / OpenBao`, `MinIO / Object Storage`, `Pinata / IPFS`, `Resend Email`, `PayPal Webhook`, `Polygon RPC`, `Redis` y `PostgreSQL`.
+- La vista admin de Health considera saludables estados operativos como `web3signer`, `openbao`, `local`, `minio`, `r2` y `s3`, no sólo el literal `ok`.
+- La sección `Institución > Analytics` corrige sus fuentes de datos:
+  - `Estudiantes activos` se calcula desde actividad real de inscripciones (`enrollments`) de los últimos 30 días, no desde destinatarios de certificados.
+  - La comparación anterior también usa inscripciones del periodo previo de 30 días.
+  - La tasa global de completación se calcula sobre todas las inscripciones de la institución, no sobre la lista limitada de cursos mostrada en pantalla.
+  - Los ingresos por curso se calculan desde inscripciones pagadas (`paid_at`) y el precio real del curso.
+  - La serie diaria de emisión se mantiene basada en certificados emitidos porque esa gráfica representa certificados.
+  - Se reemplazó el filtro SQL crudo con fechas por condiciones Drizzle sobre columnas (`created_at`, `started_at`, `completed_at`) para evitar errores runtime del endpoint.
+  - El rendimiento por curso usa `left join` + `group by` contra `enrollments` para contar inscriptos, completaciones e ingresos por curso de forma calificada.
+- Tablas modificadas:
+  - `credit_ledger`.
+  - `tsc_lots`.
+- Atributos agregados en `credit_ledger`:
+  - `nominal_value_cents integer`.
+  - `amount_paid_cents integer`.
+  - `discount_cents integer`.
+  - `discount_bps integer`.
+  - `pricing_version varchar(80)`.
+  - `certificate_cost_tsc integer`.
+  - `balance_before integer`.
+  - `balance_after integer`.
+- Atributos agregados en `tsc_lots`:
+  - `nominal_value_cents integer`.
+  - `amount_paid_cents integer`.
+  - `discount_cents integer`.
+  - `discount_bps integer`.
+  - `pricing_version varchar(80)`.
+  - `certificate_cost_tsc integer`.
+- El seguimiento institucional de cursos ahora muestra actividad de evaluaciones por módulo: intentos iniciados, enviados pendientes y calificados, evitando que una entrega manual parezca ausencia de avance.
+- El cierre manual de módulos desde seguimiento institucional ahora exige score y conserva la nota existente; además muestra un resumen de la respuesta enviada por el estudiante en cada evaluación.
+- La sección institucional de estudiantes ahora se alimenta directamente de las inscripciones de los cursos accesibles y muestra los cursos asociados por estudiante, sin depender de la tabla auxiliar `institution_students` para que aparezcan.
+- La sección institucional de estudiantes limita su lista base a alumnos inscritos en cursos accesibles de la institución; `institution_students` ya no agrega estudiantes sin inscripción y los certificados sólo enriquecen alumnos ya incluidos por inscripción.
+- La lista institucional de estudiantes ya no queda vacía si falla sólo la agregación auxiliar de certificados: las inscripciones siguen mostrándose y el API registra un warning para revisar la métrica de certificados.
+- La ordenación de estudiantes normaliza timestamps devueltos como `Date` o string para evitar errores `getTime` en entornos donde el driver serializa fechas.
+- La confirmación al editar una nota existente en seguimiento de estudiantes ahora usa un modal visual de Tessera y sólo aparece cuando se modifica una calificación/nota ya guardada, no al guardar la primera corrección.
+- La edición de notas y avance queda restringida a la institución: los endpoints docentes de calificación/progreso devuelven prohibido, el panel docente queda en modo lectura y el drawer institucional pide confirmación antes de guardar cambios de notas.
+- Los docentes ya no pueden crear, editar, eliminar ni reordenar módulos, ni modificar temarios/material/evaluaciones existentes; en cursos sólo pueden trabajar sobre módulos existentes creando nuevos métodos de evaluación y agregando preguntas.
+- El favicon se regeneró desde el PNG colorido de Tessera y se agregaron `app/icon.png` y `app/apple-icon.png` para que Next publique el ícono con color en pestañas y accesos.
+- El listado admin de certificados ahora consulta certificados con joins explícitos a instituciones y cursos, trayendo sólo las columnas necesarias para mostrar todos los certificados y el resumen por institución sin depender de consultas auxiliares frágiles.
+- Los docentes vuelven a poder calificar por primera vez intentos y módulos de estudiantes inscritos en sus cursos asignados; la edición de notas ya calificadas queda reservada a la institución.

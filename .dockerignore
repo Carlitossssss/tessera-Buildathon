@@ -1,0 +1,79 @@
+# Tessera - archivos que NO se copian al contexto de Docker
+# Reduce el tiempo de build y evita filtrar secretos.
+
+# ─── Git y metadatos ───
+.git
+.gitignore
+.gitattributes
+
+# ─── Agentes IA, prompts, skills (no se necesitan en runtime) ───
+.agents
+.claude
+.copilot
+.cursor
+.continue
+.aider*
+.aider.chat.history.md
+.github/prompts
+skills-lock.json
+
+# ─── Documentación ───
+docs
+*.md
+!apps/api/**/*.md
+!apps/web/**/*.md
+!packages/**/README.md
+
+# ─── Dependencias (se instalan dentro del Dockerfile) ───
+node_modules
+**/node_modules
+.pnpm-store
+.pnpm-debug.log*
+
+# ─── Builds previos ───
+**/dist
+**/build
+**/.next
+**/.turbo
+**/out
+**/coverage
+**/.nyc_output
+**/*.tsbuildinfo
+
+# ─── Variables de entorno (NUNCA al contexto) ───
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.development
+**/.env
+**/.env.local
+**/.env.*.local
+**/.env.production
+**/.env.staging
+**/.env.development
+
+# ─── Logs y temporales ───
+**/*.log
+logs
+tmp
+uploads
+
+# ─── IDE y OS ───
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+
+# ─── Tests ───
+**/__tests__
+**/__mocks__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/vitest.config.ts

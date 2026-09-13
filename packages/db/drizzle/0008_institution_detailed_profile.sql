@@ -1,0 +1,11 @@
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "legal_name" varchar(240);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "tax_id" varchar(80);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "address_line" varchar(240);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "city" varchar(120);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "state_region" varchar(120);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "postal_code" varchar(40);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "contact_name" varchar(200);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "contact_email" varchar(255);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "contact_phone" varchar(60);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "accreditation_id" varchar(120);
+ALTER TABLE "institutions" ADD COLUMN IF NOT EXISTS "profile_submitted_at" timestamp with time zone;

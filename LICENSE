@@ -1,0 +1,195 @@
+TESSERA — ACUERDO DE LICENCIA PROPIETARIA
+Copyright (c) 2024–2026 Blokis SRL — https://blokislabs.com
+Todos los derechos reservados.
+
+ESTADO ACTUAL: SOFTWARE EN DESARROLLO ACTIVO
+Esta es una licencia propietaria de uso interno. El proyecto Tessera se
+encuentra en fase de desarrollo y retoque final. No constituye software
+de código abierto (open source) ni software libre. Ninguna cláusula de
+este documento debe interpretarse como concesión de derechos sobre el
+Software más allá de los expresamente indicados.
+
+================================================================================
+AVISO LEGAL
+================================================================================
+
+Este software, su código fuente, arquitectura, diseño, documentación,
+contratos inteligentes y todos los activos asociados (en adelante "el
+Software") son propiedad exclusiva de Blokis SRL (en adelante "Blokis").
+
+El Software está protegido por las leyes de propiedad intelectual aplicables,
+tratados internacionales de derechos de autor y demás normativa vigente.
+
+================================================================================
+1. TITULARIDAD Y ESTRUCTURA DE PARTICIPACIÓN
+================================================================================
+
+1.1  TITULARIDAD ACTUAL
+     Blokis SRL ostenta en este momento el CIEN POR CIENTO (100%) de la
+     titularidad del proyecto Tessera, incluyendo sin limitación: código
+     fuente, arquitectura, marca, contratos inteligentes, base de datos,
+     diseño de producto y cualquier obra derivada.
+
+1.2  PARTICIPACIÓN FUTURA DE COLABORADORES
+     La estructura de titularidad podrá evolucionar a medida que el proyecto
+     incorpore colaboradores activos. Blokis SRL reconoce que la colaboración
+     genuina merece reconocimiento y participación. A tal efecto:
+
+     a) Blokis SRL podrá retener una participación de referencia del SETENTA
+        POR CIENTO (70%) o superior, en función del volumen y calidad de las
+        contribuciones externas recibidas.
+
+     b) El porcentaje restante constituirá un fondo de participación para
+        colaboradores, cuya distribución se determinará individualmente
+        de acuerdo con la naturaleza y el valor de cada aportación.
+
+     c) La colaboración NO se limita exclusivamente a la escritura de código.
+        Se reconocerán como contribuciones válidas, entre otras:
+
+          · Asistencia y participación activa en reuniones de proyecto
+          · Diseño de producto, UX/UI y experiencia de usuario
+          · Arquitectura, planificación técnica y revisión de decisiones
+          · Documentación, investigación y análisis de mercado
+          · Pruebas, control de calidad y revisión de código
+          · Gestión de comunidad, comunicación y relaciones externas
+          · Cualquier otra aportación de valor acordada con Blokis SRL
+
+     d) La participación de cada colaborador se calculará de manera
+        proporcional al valor real de sus aportaciones, pudiendo resultar
+        en un porcentaje inferior o superior al inicialmente estimado, según
+        la evaluación acordada por escrito con Blokis SRL.
+
+1.3  FORMALIZACIÓN OBLIGATORIA
+     Ninguna contribución — ya sea código, diseño, participación en reuniones
+     u otra forma de colaboración — otorga automáticamente participación
+     económica ni titularidad sobre el Software. Todo acuerdo de distribución
+     de participación deberá estar formalizado mediante documento escrito
+     firmado por representante autorizado de Blokis SRL.
+
+================================================================================
+2. COLABORADORES
+================================================================================
+
+Los colaboradores reconocidos por Blokis SRL quedarán registrados en el
+archivo CONTRIBUTORS.md del repositorio, con indicación de su rol y el
+período de su colaboración.
+
+El reconocimiento como colaborador en CONTRIBUTORS.md:
+  - Acredita la participación en el proyecto.
+  - No implica por sí solo la asignación de participación económica.
+  - No otorga derechos sobre el código ni sobre la marca Tessera o Blokis.
+
+Todo colaborador que acceda al repositorio o a activos del proyecto lo hace
+bajo los términos de esta licencia y, en su caso, bajo un acuerdo de
+confidencialidad (NDA) suscrito con Blokis SRL.
+
+================================================================================
+3. RESTRICCIONES
+================================================================================
+
+Queda EXPRESAMENTE PROHIBIDO sin autorización previa y por escrito de Blokis:
+
+a) Copiar, reproducir, distribuir o sublicenciar el Software, en todo o en
+   parte, a cualquier tercero.
+
+b) Utilizar el Software, su arquitectura o cualquier parte de su código para
+   desarrollar productos, servicios o proyectos competidores.
+
+c) Realizar ingeniería inversa, descompilar, desensamblar o intentar derivar
+   el código fuente de cualquier componente compilado del Software.
+
+d) Eliminar, modificar u ocultar avisos de derechos de autor, marcas
+   registradas u otros avisos legales presentes en el Software.
+
+e) Plagiar, reproducir o presentar como propios el diseño, arquitectura,
+   código, documentación o cualquier otro elemento del Software.
+
+f) Publicar, compartir, filtrar o divulgar el código fuente, configuración,
+   secretos, datos de clientes o cualquier información confidencial del
+   proyecto sin autorización expresa de Blokis SRL.
+
+g) Reclamar autoría o titularidad sobre el Software o cualquiera de sus
+   componentes sin acuerdo escrito previo con Blokis SRL.
+
+================================================================================
+4. PROPIEDAD INTELECTUAL Y MARCA
+================================================================================
+
+Todas las marcas, logotipos, nombres comerciales —incluyendo "Tessera" y
+"Blokis"— y los elementos de identidad visual asociados al proyecto son
+propiedad exclusiva de Blokis SRL. Queda prohibido su uso en cualquier
+contexto sin autorización expresa y por escrito.
+
+Los contratos inteligentes (smart contracts) desplegados en redes blockchain
+como parte del proyecto Tessera forman parte integral del Software y están
+sujetos en su totalidad a los términos de esta licencia.
+
+================================================================================
+5. CONFIDENCIALIDAD
+================================================================================
+
+El Software, su código fuente, arquitectura y cualquier información técnica
+o comercial relacionada con el proyecto Tessera se consideran información
+confidencial de Blokis SRL. Toda persona con acceso al repositorio o a los
+activos del proyecto asume la obligación de mantener su confidencialidad
+durante la vigencia de su colaboración y por un período de TRES (3) años
+después de su finalización.
+
+================================================================================
+6. AUSENCIA DE GARANTÍAS
+================================================================================
+
+EL SOFTWARE SE PROPORCIONA "TAL CUAL" (AS IS), SIN GARANTÍA DE NINGÚN TIPO,
+EXPRESA O IMPLÍCITA. BLOKIS SRL NO GARANTIZA QUE EL SOFTWARE ESTÉ LIBRE DE
+ERRORES, SEA APTO PARA UN PROPÓSITO DETERMINADO NI QUE SU FUNCIONAMIENTO SEA
+ININTERRUMPIDO O LIBRE DE VULNERABILIDADES.
+
+================================================================================
+7. LIMITACIÓN DE RESPONSABILIDAD
+================================================================================
+
+En ningún caso Blokis SRL, sus directivos, empleados o colaboradores serán
+responsables de daños directos, indirectos, incidentales, especiales,
+punitivos o consecuentes derivados del uso o la imposibilidad de uso del
+Software, incluso si se ha advertido expresamente de la posibilidad de
+dichos daños.
+
+================================================================================
+8. LEY APLICABLE Y RESOLUCIÓN DE CONFLICTOS
+================================================================================
+
+Esta licencia se rige por las leyes aplicables en la jurisdicción donde opera
+Blokis SRL. Cualquier disputa derivada de o relacionada con esta licencia se
+intentará resolver, en primera instancia, mediante negociación amistosa entre
+las partes. De no alcanzarse un acuerdo en el plazo de treinta (30) días,
+la disputa se someterá a la jurisdicción exclusiva de los tribunales
+competentes, con renuncia expresa a cualquier otro fuero.
+
+================================================================================
+9. MODIFICACIONES DE ESTA LICENCIA
+================================================================================
+
+Blokis SRL se reserva el derecho de modificar los términos de esta licencia
+en cualquier momento. Los colaboradores serán notificados de cambios
+sustanciales. La versión vigente siempre estará disponible en el repositorio
+oficial del proyecto.
+
+================================================================================
+10. CONTACTO
+================================================================================
+
+Para permisos, acuerdos de colaboración, consultas legales o cualquier
+comunicación relacionada con esta licencia:
+
+  Blokis SRL
+  https://blokislabs.com
+  legal@blokislabs.com
+
+================================================================================
+
+  Blokis SRL mantiene el 100% de la titularidad de Tessera.
+  La participación de colaboradores se acordará por escrito según aportación.
+  TODOS LOS DERECHOS RESERVADOS — © 2024–2026 BLOKIS SRL
+
+================================================================================
+

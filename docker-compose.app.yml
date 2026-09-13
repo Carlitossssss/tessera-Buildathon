@@ -1,0 +1,150 @@
+# Stack de aplicación para correr Tessera completo en Docker, en local.
+#
+#   docker compose -f docker-compose.app.yml up -d --build
+#
+#
+# ¿Por qué no se usa docker-compose.dokploy.yml directamente?
+# ----------------------------------------------------------
+# Es la pregunta correcta, porque ese archivo ya describe toda la topología.
+# Se intentó de dos formas y ninguna sirve en una máquina de trabajo:
+#
+#   1. Tal cual. Exige 19 variables con `:?` y en el .env de desarrollo faltan
+#      siete (las credenciales de Postgres, Redis y MinIO, el token de custodia
+#      de OpenBao y BACKEND_SIGNER_ADDRESS). `docker compose config` aborta
+#      antes de construir nada.
+#
+#   2. Como override (-f dokploy.yml -f local.yml). Valida y arranca, pero
+#      define sus PROPIOS postgres, redis y minio con volúmenes nuevos: la base
+#      de datos de trabajo, con sus migraciones y sus datos de prueba, queda
+#      abandonada. Para desarrollo eso es peor que duplicar tres definiciones.
+#
+# Así que este archivo levanta sólo la capa de aplicación —migraciones, API,
+# workers y web— y se engancha a la infraestructura que ya corre desde
+# docker-compose.yml. Los datos existentes se conservan.
+#
+# El precio es real y conviene tenerlo presente: api, workers y web están
+# definidos en dos sitios. Si cambia un Dockerfile o se añade una variable de
+# entorno que la aplicación necesite, hay que tocar los dos archivos.
+#
+#
+# Diferencias deliberadas con producción
+# --------------------------------------
+# Sin OpenBao ni Web3Signer. En el servidor la clave de firma vive en OpenBao
+# y Web3Signer la usa sin que la API llegue a verla. Reproducir eso en local
+# obligaría a hacer unseal a mano en cada arranque, así que aquí la API firma
+# con SIGNER_PRIVATE_KEY, que es una wallet de testnet sin valor real.
+#
+# Eso significa que este archivo NO sirve para desplegar: no tiene el modelo
+# de custodia de secretos que sí tiene el de Dokploy.
+
+name: tessera-app
+
+services:
+  # Aplica las migraciones pendientes antes de que arranque nada más. Es
+  # idempotente: las ya aplicadas se saltan solas.
+  db-init:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: build
+    restart: 'no'
+    command: ['sh', '-ec', 'pnpm --filter @tessera/db migrate']
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://tessera:tessera@postgres:5432/tessera
+    networks: [infra]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment: &app_env
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: 3001
+      # Dentro de la red de Docker los servicios se alcanzan por su nombre,
+      # no por localhost: el .env apunta a localhost porque está pensado para
+      # ejecutar la API fuera del contenedor.
+      DATABASE_URL: postgresql://tessera:tessera@postgres:5432/tessera
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://minio:9000
+      API_PUBLIC_URL: http://localhost:3001
+      API_CORS_ORIGINS: http://localhost:3000
+      AUTH_URL: http://localhost:3000
+      # En local se firma con la clave directa; OpenBao y Web3Signer quedan
+      # fuera para no depender del unseal manual en cada arranque.
+      WEB3SIGNER_URL: ''
+      OPENBAO_URL: ''
+    ports:
+      - '3001:3001'
+    # El healthcheck del Dockerfile apunta a "localhost", que dentro del
+    # contenedor resuelve primero a ::1. La API escucha en 0.0.0.0 (IPv4), así
+    # que esa sonda falla y marca el contenedor unhealthy aunque responda
+    # correctamente. Se fija a 127.0.0.1 para comprobar lo que de verdad sirve.
+    healthcheck:
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3001/v1/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    networks: [infra]
+
+  workers:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.workers
+    restart: unless-stopped
+    env_file: .env
+    environment: *app_env
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    networks: [infra]
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Next.js congela las variables NEXT_PUBLIC_* en tiempo de build, así
+        # que tienen que llegar como argumentos y no sólo como entorno. Si
+        # faltan, la web compila pero queda sin contratos ni Lock.
+        NEXT_PUBLIC_API_URL: http://localhost:3001
+        NEXT_PUBLIC_AUTH_URL: http://localhost:3000
+        NEXT_PUBLIC_POLYGON_CHAIN_ID: '80002'
+        NEXT_PUBLIC_POLYGON_RPC_URL: https://polygon-amoy-bor-rpc.publicnode.com
+        NEXT_PUBLIC_CONTRACT_REGISTRY: '0x472d08AEe5405b3Bc4D75A4EE093dA103adD0cEb'
+        NEXT_PUBLIC_CONTRACT_CERTIFICATE: '0x9571E4553636314A9A583B8c5c784d207D51F635'
+        NEXT_PUBLIC_CONTRACT_BADGE: '0x873Dd9478aA6Aa9C3594eE741aCC7a220763BF1a'
+        NEXT_PUBLIC_UNLOCK_LOCK_ADDRESS: '0xf06504978df6ab1540030373c5691b1128520f0c'
+        NEXT_PUBLIC_UNLOCK_CHAIN_ID: '11155111'
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # El servidor de Next habla con la API por la red interna; el navegador
+      # la alcanza por localhost. Por eso los dos valores difieren.
+      API_INTERNAL_URL: http://api:3001
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_AUTH_URL: http://localhost:3000
+      AUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: 'true'
+    env_file: .env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    networks: [infra]
+
+networks:
+  # Red que ya crea docker-compose.yml. Se referencia como externa para
+  # reutilizar postgres, redis y minio en lugar de levantar copias nuevas.
+  infra:
+    external: true
+    name: tessera_default

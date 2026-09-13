@@ -1,0 +1,64 @@
+# syntax=docker/dockerfile:1.7
+# Tessera API - Fastify 5 + BullMQ workers
+# Multi-stage build, optimizado para caché de capas.
+# Build: pnpm --filter @tessera/api build (genera dist/server.js y dist/workers.js)
+
+ARG NODE_VERSION=22.18.0
+
+# ────────────────────────────────────────────────────────────────────
+# Base: Node + pnpm, sin código todavía
+# ────────────────────────────────────────────────────────────────────
+FROM node:${NODE_VERSION}-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV CI=true
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN corepack enable && corepack prepare pnpm@10.15.0 --activate
+WORKDIR /app
+
+# ────────────────────────────────────────────────────────────────────
+# Deps: solo manifests para cachear el install entre cambios de código
+# ────────────────────────────────────────────────────────────────────
+FROM base AS deps
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* .npmrc ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/db/package.json ./packages/db/
+COPY packages/contracts/package.json ./packages/contracts/
+RUN --mount=type=cache,id=pnpm-api,target=/pnpm/store \
+    pnpm install --frozen-lockfile --filter @tessera/api...
+
+# ────────────────────────────────────────────────────────────────────
+# Build: copia código y compila con tsup
+# ────────────────────────────────────────────────────────────────────
+FROM deps AS build
+COPY tsconfig.base.json ./
+COPY packages ./packages
+COPY apps/api ./apps/api
+RUN pnpm --filter @tessera/api build
+
+# ────────────────────────────────────────────────────────────────────
+# Production: imagen final, sólo runtime
+# ────────────────────────────────────────────────────────────────────
+FROM node:${NODE_VERSION}-alpine AS production
+RUN apk add --no-cache fontconfig ttf-dejavu
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--enable-source-maps"
+ENV CI=true
+ENV NEXT_TELEMETRY_DISABLED=1
+WORKDIR /app
+
+# Copiamos sólo lo necesario para producción
+COPY --from=build /app/apps/api/dist ./apps/api/dist
+COPY --from=build /app/apps/api/package.json ./apps/api/package.json
+COPY --from=build /app/packages ./packages
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
+
+EXPOSE 3001
+USER node
+CMD ["node", "apps/api/dist/server.js"]
+
+# Healthcheck (Dokploy lo usa si se configura en la UI)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3001/v1/health || exit 1
