@@ -45,7 +45,7 @@ Desarrollado por el **Equipo Tessera**
 
 **Institución**
 - Correo: `institution@tessera.io`
-- Contraseña: `Pass1234`
+- Contraseña: `institution123`
 
 **Docente**
 - Correo: `lau.nunez@outlook.es`
