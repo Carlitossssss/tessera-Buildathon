@@ -2,223 +2,223 @@
 
 # Tessera
 
-**Credenciales académicas verificables on-chain**
+**Verifiable on-chain academic credentials**
 
-Certificados como Soulbound Tokens · Verificación pública sin cuenta · Cursos token-gated con Unlock Protocol
+Certificates as Soulbound Tokens · Public verification, no account needed · Token-gated courses with Unlock Protocol
 
-[![Avalanche](https://img.shields.io/badge/Avalanche-Fuji-e84142?style=flat-square)](#21-avalanche---que-la-credencial-se-vea)
-[![Unlock](https://img.shields.io/badge/Unlock%20Protocol-Sepolia-ff6771?style=flat-square)](#22-unlock-protocol---que-la-institución-cobre)
-[![HashKey](https://img.shields.io/badge/HashKey%20Chain-Testnet-00d2ff?style=flat-square)](#23-hashkey-chain---que-un-auditor-lo-acepte)
-[![Solidity](https://img.shields.io/badge/Solidity%200.8.36-Foundry%20·%2083%20tests-627eea?style=flat-square)](#3-contratos-inteligentes)
+[![Avalanche](https://img.shields.io/badge/Avalanche-Fuji-e84142?style=flat-square)](#21-avalanche---making-the-credential-visible)
+[![Unlock](https://img.shields.io/badge/Unlock%20Protocol-Sepolia-ff6771?style=flat-square)](#22-unlock-protocol---letting-the-institution-get-paid)
+[![HashKey](https://img.shields.io/badge/HashKey%20Chain-Testnet-00d2ff?style=flat-square)](#23-hashkey-chain---so-an-auditor-can-accept-it)
+[![Solidity](https://img.shields.io/badge/Solidity%200.8.36-Foundry%20·%2083%20tests-627eea?style=flat-square)](#3-smart-contracts)
 
-Desarrollado por el **Equipo Tessera** 
+Built by the **Tessera Team**
 
 </div>
 
 ---
 
-## Índice
+## Table of Contents
 
-1. [Qué es Tessera](#1-qué-es-tessera)
-2. [Las tres tecnologías del buildathon](#2-las-tres-tecnologías-del-buildathon) ← **empiece aquí**
-3. [Contratos inteligentes](#3-contratos-inteligentes)
-4. [Redes desplegadas](#4-redes-desplegadas)
-5. [Cómo verificar un certificado sin confiar en nosotros](#5-cómo-verificar-un-certificado-sin-confiar-en-nosotros)
-6. [Arquitectura](#6-arquitectura)
-7. [Levantar el proyecto en local](#7-levantar-el-proyecto-en-local)
-8. [Configuración completa](#8-configuración-completa)
-9. [Verificación y pruebas](#9-verificación-y-pruebas)
-10. [Solución de problemas](#10-solución-de-problemas)
-11. [Alcance real del proyecto](#11-alcance-real-del-proyecto)
+1. [What Tessera is](#1-what-tessera-is)
+2. [The three buildathon technologies](#2-the-three-buildathon-technologies) ← **start here**
+3. [Smart contracts](#3-smart-contracts)
+4. [Deployed networks](#4-deployed-networks)
+5. [How to verify a certificate without trusting us](#5-how-to-verify-a-certificate-without-trusting-us)
+6. [Architecture](#6-architecture)
+7. [Running the project locally](#7-running-the-project-locally)
+8. [Full configuration](#8-full-configuration)
+9. [Verification and testing](#9-verification-and-testing)
+10. [Troubleshooting](#10-troubleshooting)
+11. [Actual project scope](#11-actual-project-scope)
 
 ---
 > [!WARNING]
-> **CREDENCIALES DE DEMOSTRACIÓN — USO AUTORIZADO**
+> **DEMO CREDENTIALS — AUTHORIZED USE ONLY**
 >
-> Estas credenciales son exclusivamente para demostraciones, pruebas y evaluación del buildathon. No las modifique, comparta, abuse de ellas ni las utilice fuera del entorno de demostración.
+> These credentials are exclusively for buildathon demonstrations, testing, and evaluation. Do not modify, share, misuse, or use them outside the demo environment.
 
-### Credenciales de demostración
+### Demo credentials
 
-**Estudiante**
-- Correo: `serranoroly23@gmail.com`
-- Contraseña: `R1o2l3y4`
+**Student**
+- Email: `serranoroly23@gmail.com`
+- Password: `R1o2l3y4`
 
-**Institución**
-- Correo: `institution@tessera.io`
-- Contraseña: `institution123`
+**Institution**
+- Email: `institution@tessera.io`
+- Password: `institution123`
 
-**Docente**
-- Correo: `lau.nunez@outlook.es`
-- Contraseña: `Pass1234`
+**Teacher**
+- Email: `lau.nunez@outlook.es`
+- Password: `Pass1234`
 
-## 1. Qué es Tessera
+## 1. What Tessera is
 
-Una plataforma donde una institución educativa emite certificados como **Soulbound Tokens** —NFT que no se pueden transferir ni vender— y cualquiera puede verificarlos directamente contra la blockchain, sin crear una cuenta y sin confiar en Tessera.
+A platform where an educational institution issues certificates as **Soulbound Tokens** — NFTs that cannot be transferred or sold — and anyone can verify them directly against the blockchain, with no account and no need to trust Tessera.
 
-**El problema.** Un diploma en PDF se falsifica en minutos. Verificarlo de verdad exige llamar por teléfono a la universidad, esperar, y confiar en quien contesta. No escala, y en la práctica casi nadie lo hace.
+**The problem.** A PDF diploma can be forged in minutes. Verifying it properly means calling the university, waiting, and trusting whoever answers. It doesn't scale, and in practice almost no one does it.
 
-**La solución.** El certificado lleva la autoría de la institución grabada en el contrato. Quien lo recibe no puede venderlo porque el token está permanentemente bloqueado (ERC-5192). Y quien quiera comprobarlo lee el contrato desde cualquier explorador de bloques: si Tessera desapareciera mañana, la credencial seguiría siendo verificable.
+**The solution.** The certificate carries the institution's authorship recorded in the contract. The recipient can't sell it because the token is permanently locked (ERC-5192). And anyone who wants to check it can read the contract from any block explorer: if Tessera disappeared tomorrow, the credential would still be verifiable.
 
-**Cuatro roles, cuatro paneles:** administrador de plataforma, institución, docente y estudiante.
+**Four roles, four dashboards:** platform admin, institution, teacher, and student.
 
-> Todo lo desplegado es **testnet**. No hay ningún despliegue en mainnet.
+> Everything deployed is **testnet**. There is no mainnet deployment.
 
 ---
 
-## 2. Las tres tecnologías del buildathon
+## 2. The three buildathon technologies
 
-Tessera no adoptó tres cadenas para sumar logos. Cada una resuelve un problema que las otras dos no resuelven, y las tres decisiones se tomaron después de chocar con una limitación concreta.
+Tessera didn't adopt three chains just to collect logos. Each one solves a problem the other two don't, and all three decisions were made after running into a concrete limitation.
 
-El resumen en una frase: **Polygon emite, Avalanche hace que se vea, Unlock hace que se pague, y HashKey hace que un auditor lo acepte.**
+The one-sentence summary: **Polygon issues, Avalanche makes it visible, Unlock makes it payable, and HashKey makes it acceptable to an auditor.**
 
-| | Rol en el producto | Por qué esta y no otra | Evidencia en el código |
+| | Role in the product | Why this one and not another | Evidence in the code |
 |---|---|---|---|
-| **Avalanche Fuji** | El diploma se puede **enseñar** | Snowtrace renderiza la imagen del NFT; PolygonScan Amoy no | `certificate-mirror.ts` · 6 tests |
-| **Unlock Protocol** | La institución **cobra** por su contenido | Estándar de membresías on-chain, desplegado en Sepolia | `unlock.ts`, `lock-health.ts`, `course-access.ts` · 111 tests |
-| **HashKey Chain** | Un **auditor** puede comprobarlo | Cadena compliance-first para activos del mundo real | `institution-accreditation.ts`, `provenance.ts` · 5 tests |
+| **Avalanche Fuji** | The diploma can be **shown** | Snowtrace renders the NFT image; PolygonScan Amoy does not | `certificate-mirror.ts` · 6 tests |
+| **Unlock Protocol** | The institution **gets paid** for its content | On-chain membership standard, deployed on Sepolia | `unlock.ts`, `lock-health.ts`, `course-access.ts` · 111 tests |
+| **HashKey Chain** | An **auditor** can verify it | Compliance-first chain for real-world assets | `institution-accreditation.ts`, `provenance.ts` · 5 tests |
 
-Las tres integraciones suman **122 tests automatizados**.
-
----
-
-### 2.1 Avalanche — que la credencial se vea
-
-**El problema real.** Emitimos en Polygon Amoy y funcionaba: el token existía, el `tokenURI` resolvía, la metadata era correcta. Pero al abrir el certificado en PolygonScan Amoy la imagen salía como un marcador de posición gris. Ese explorador no renderiza imágenes de NFT en testnet.
-
-Una credencial que no se ve **no funciona como credencial**. Un egresado no puede enseñarle un cuadro gris a un empleador. El problema no era técnico, era de producto.
-
-**Qué hicimos.** Cada certificado se replica en Avalanche Fuji, donde Snowtrace sí dibuja la imagen. El original vive en Amoy; la réplica es la copia visible.
-
-**Cómo está construido** — [`certificate-mirror.ts`](apps/api/src/services/certificate-mirror.ts):
-
-- **La réplica pasa por el AutoIssuer, no por `mint()` directo.** El contrato solo autoriza a la institución, a un docente aprobado o al AutoIssuer, y el signer del backend no es ninguno de los tres. El AutoIssuer valida una firma EIP-712 y acuña en nombre de la institución, sin que ella pague gas ni custodie una clave.
-- **RPC con fallback en cascada.** El endpoint oficial de Avalanche devuelve `403` a peticiones desde IPs de datacenter: funcionaba en local y fallaba en producción. Hay tres endpoints en orden de preferencia, y `MIRROR_RPC_URLS_FUJI` permite anteponer uno privado sin desplegar.
-- **Un fallo de réplica nunca invalida el original.** Un mint no se puede deshacer. Si la réplica falla se registra en `certificate_mirrors` con su razón y su contador de intentos, y se reintenta con `POST /v1/me/certificates/:id/mirrors/:chainId/retry`.
-- **Clave de firma independiente.** Web3Signer arranca con un único `--chain-id` y no puede firmar para otra cadena, así que las réplicas usan `MIRROR_SIGNER_PRIVATE_KEY`: una wallet de bajo valor que solo paga gas de testnet.
-
-**Un detalle que costó un redespliegue.** El primer contrato en Fuji (`0x60521efB…`) indexaba las transferencias, pero la ficha de cada token salía vacía: sin `totalSupply()` el explorador no construye el inventario de la colección. Se añadió `ERC721Enumerable` y `contractURI`, y se redesplegó el 2026-09-12. Los certificados del contrato anterior siguen existiendo on-chain.
-
-**Compruébelo.** Abra un certificado en https://testnet.snowtrace.io y compare con el mismo token en Amoy. Esa diferencia es exactamente la razón por la que Avalanche está en el proyecto.
+The three integrations add up to **122 automated tests**.
 
 ---
 
-### 2.2 Unlock Protocol — que la institución cobre
+### 2.1 Avalanche — making the credential visible
 
-**El problema real.** El modelo de negocio solo tenía una dirección: la institución **paga** a Tessera por emitir. Nada permitía que la institución **cobrara** por su propio contenido. Un curso con material de valor no tenía forma de monetizarse dentro de la plataforma.
+**The real problem.** We minted on Polygon Amoy and it worked: the token existed, the `tokenURI` resolved, the metadata was correct. But opening the certificate on PolygonScan Amoy showed the image as a gray placeholder. That explorer doesn't render NFT images on testnet.
 
-**Qué hicimos.** Cursos token-gated: la institución publica un curso, fija un Lock de Unlock, y el acceso al contenido depende de tener una llave válida. Al terminar, el estudiante recibe su certificado soulbound. La membresía queda **demostrada como causa** de la credencial, no como un adorno.
+A credential that can't be seen **doesn't work as a credential**. A graduate can't show a gray box to an employer. The problem wasn't technical — it was a product problem.
 
-**La autorización vive en el servidor** — [`unlock.ts`](apps/api/src/services/unlock.ts). El contenido completo nunca sale de la API sin una llave válida. El candado sobre la portada es señalización; la barrera está en el servidor. No hay nada que saltarse desde el navegador.
+**What we did.** Every certificate is mirrored on Avalanche Fuji, where Snowtrace does draw the image. The original lives on Amoy; the mirror is the visible copy.
 
-**`getHasValidKey` autoriza; `balanceOf` solo informa.** Es una distinción deliberada: `balanceOf` cuenta también las llaves vencidas, así que autorizar con ella dejaría pasar membresías caducadas. `getHasValidKey` ya contempla la expiración.
+**How it's built** — [`certificate-mirror.ts`](apps/api/src/services/certificate-mirror.ts):
 
-**Consultar el Lock no basta.** Prueba que *esa wallet* tiene membresía, no que quien la pide sea su dueño. Por eso el estudiante firma un mensaje EIP-191, sin gas, y el servidor recupera la dirección desde la firma:
+- **The mirror goes through the AutoIssuer, not a direct `mint()`.** The contract only authorizes the institution, an approved teacher, or the AutoIssuer, and the backend's signer is none of the three. The AutoIssuer validates an EIP-712 signature and mints on the institution's behalf, without it paying gas or holding a key.
+- **RPC with cascading fallback.** Avalanche's official endpoint returns `403` to requests from datacenter IPs: it worked locally and failed in production. There are three endpoints in order of preference, and `MIRROR_RPC_URLS_FUJI` lets you prepend a private one without redeploying.
+- **A mirror failure never invalidates the original.** A mint can't be undone. If the mirror fails, it's logged in `certificate_mirrors` with its reason and attempt count, and can be retried via `POST /v1/me/certificates/:id/mirrors/:chainId/retry`.
+- **Independent signing key.** Web3Signer starts with a single `--chain-id` and can't sign for another chain, so mirrors use `MIRROR_SIGNER_PRIVATE_KEY`: a low-value wallet that only pays testnet gas.
+
+**A detail that cost a redeployment.** The first contract on Fuji (`0x60521efB…`) indexed transfers fine, but each token's page came up empty: without `totalSupply()` the explorer can't build the collection's inventory. `ERC721Enumerable` and `contractURI` were added, and it was redeployed on 2026-09-12. Certificates from the previous contract still exist on-chain.
+
+**Check it yourself.** Open a certificate at https://testnet.snowtrace.io and compare it with the same token on Amoy. That difference is exactly why Avalanche is part of the project.
+
+---
+
+### 2.2 Unlock Protocol — letting the institution get paid
+
+**The real problem.** The business model only worked in one direction: the institution **pays** Tessera to issue certificates. Nothing let the institution **get paid** for its own content. A course with valuable material had no way to monetize inside the platform.
+
+**What we did.** Token-gated courses: the institution publishes a course, sets an Unlock Lock, and access to the content depends on holding a valid key. On completion, the student receives a soulbound certificate. The membership is **proven as the cause** of the credential, not just decoration.
+
+**Authorization lives on the server** — [`unlock.ts`](apps/api/src/services/unlock.ts). Full content never leaves the API without a valid key. The lock icon on the cover is just signaling; the actual barrier is on the server. There's nothing to bypass from the browser.
+
+**`getHasValidKey` authorizes; `balanceOf` only informs.** This distinction is deliberate: `balanceOf` also counts expired keys, so authorizing with it would let expired memberships through. `getHasValidKey` already accounts for expiration.
+
+**Just querying the Lock isn't enough.** It proves *that wallet* has a membership, not that the requester owns it. That's why the student signs an EIP-191 message, at no gas cost, and the server recovers the address from the signature:
 
 ```
-Tessera Portal: prueba de propiedad de wallet
-Wallet: 0xAbC...              <- normalizado a checksum
-Contenido: course:<courseId>
-Emitido: 2026-09-13T10:00:00.000Z
-Firmar no cuesta gas ni autoriza ningun pago.
+Tessera Portal: proof of wallet ownership
+Wallet: 0xAbC...              <- normalized to checksum
+Content: course:<courseId>
+Issued: 2026-09-13T10:00:00.000Z
+Signing costs no gas and authorizes no payment.
 ```
 
-> La normalización a checksum no es cosmética: las wallets del navegador devuelven la dirección en minúsculas, y sin normalizar el texto difería en varios bytes. La firma recuperaba otra dirección y **toda** verificación se rechazaba.
+> Checksum normalization isn't cosmetic: browser wallets return the address in lowercase, and without normalizing, the text differed by several bytes. The signature recovered a different address and **every** verification was rejected.
 
-**Diagnóstico del Lock antes de aceptarlo** — [`lock-health.ts`](apps/api/src/services/lock-health.ts), 30 tests. La pantalla anterior daba por buena cualquier dirección con forma de `0x` más 40 caracteres. Ahora se distinguen tres fallos con consecuencias distintas:
+**Diagnosing the Lock before accepting it** — [`lock-health.ts`](apps/api/src/services/lock-health.ts), 30 tests. The previous screen accepted anything shaped like `0x` plus 40 characters. Now three distinct failure modes are distinguished, each with different consequences:
 
-| Veredicto | Qué significa | Por qué importa |
+| Verdict | What it means | Why it matters |
 |---|---|---|
-| `no se pudo leer` | Puede ser un RPC caído | No se afirma nada |
-| `no es un Lock` | No hay contrato en esa dirección | Se rechaza: nunca abriría nada |
-| `dueño ajeno` | Es un Lock, pero de otra persona | **Los pagos irían a esa wallet** |
+| `could not be read` | Might be a downed RPC | Nothing is asserted |
+| `not a Lock` | No contract at that address | Rejected: it would never unlock anything |
+| `wrong owner` | It's a Lock, but someone else's | **Payments would go to that wallet** |
 
-**El recorrido completo.** Descubrir (el temario se muestra siempre: sin eso nadie sabe qué está comprando) → previsualizar (los primeros N módulos, acotados al número real para no prometer de más) → verificar (firma + `getHasValidKey`) → desbloquear.
+**The full journey.** Discover (the syllabus is always shown: without it no one knows what they're buying) → preview (the first N modules, capped at the real total so nothing is over-promised) → verify (signature + `getHasValidKey`) → unlock.
 
-**El círculo se cierra en los dos sentidos.** `POST /v1/portal/content/:slug/complete` exige las mismas dos barreras que leer el contenido —propiedad de wallet y membresía on-chain— porque emitir cuesta más que leer. Y desde el certificado ya emitido, `PortalOriginPanel` muestra el Lock concreto contra el que se comprobó el acceso.
+**The loop closes on both ends.** `POST /v1/portal/content/:slug/complete` requires the same two checks as reading the content — wallet ownership and on-chain membership — because issuing costs more than reading. And from the already-issued certificate, `PortalOriginPanel` shows the exact Lock that access was checked against.
 
-**Una membresía vencida no retira el acceso ya concedido.** El panel lo dice sin alarmar: *"Conservas el acceso a este curso."*
+**An expired membership doesn't revoke access already granted.** The panel says so plainly, without alarm: *"You still have access to this course."*
 
-**Dónde vive.** Unlock está desplegado en Sepolia y Base Sepolia, no en Amoy ni Fuji. Por eso las membresías viven en Sepolia mientras los certificados se emiten en la red de cada institución. Cada curso guarda su propio `lockAddress` y `lockChainId`.
+**Where it lives.** Unlock is deployed on Sepolia and Base Sepolia, not on Amoy or Fuji. That's why memberships live on Sepolia while certificates are minted on each institution's network. Every course stores its own `lockAddress` and `lockChainId`.
 
 ---
 
-### 2.3 HashKey Chain — que un auditor lo acepte
+### 2.3 HashKey Chain — so an auditor can accept it
 
-**El problema real.** Un diploma es un activo del mundo real: existe fuera de la cadena y alguien concreto responde por él. Para hablar con una institución regulada no basta con que el token exista; hace falta que un tercero pueda comprobar **quién lo emitió y si estaba autorizado**, sin pedirle permiso a Tessera ni confiar en nuestra API.
+**The real problem.** A diploma is a real-world asset: it exists off-chain and someone specific is accountable for it. To talk to a regulated institution, it's not enough for the token to exist — a third party needs to be able to verify **who issued it and whether they were authorized**, without asking Tessera's permission or trusting our API.
 
-**Qué hicimos.** HashKey Chain es una cadena *compliance-first* orientada a tokenización de activos reales. Allí acreditamos instituciones on-chain y publicamos la procedencia completa de cada certificado.
+**What we did.** HashKey Chain is a *compliance-first* chain aimed at tokenizing real-world assets. There we accredit institutions on-chain and publish the full provenance of every certificate.
 
-**Acreditación institucional con trazabilidad** — [`institution-accreditation.ts`](apps/api/src/services/institution-accreditation.ts) y la tabla `institution_accreditations`. Aprobar una institución ya la registraba en `TesseraRegistry`, pero ese hecho vivía solo como `approved` en nuestra base: no quedaba constancia de **en qué cadena**, **con qué transacción**, ni **qué pasó si falló**.
+**Institutional accreditation with traceability** — [`institution-accreditation.ts`](apps/api/src/services/institution-accreditation.ts) and the `institution_accreditations` table. Approving an institution already registered it in `TesseraRegistry`, but that fact only lived as `approved` in our database: there was no record of **which chain**, **which transaction**, or **what happened if it failed**.
 
-Ahora cada acreditación guarda `chain_id`, `tx_hash`, `status`, `failure_reason` y `attempts`. Es trazabilidad, nunca autorización: **quien decide sigue siendo el contrato**; una fila solo dice que se intentó y cómo terminó. HashKey es la única red donde se **escribe** la acreditación (`WRITABLE_CHAIN_IDS = [133]`).
+Now every accreditation stores `chain_id`, `tx_hash`, `status`, `failure_reason`, and `attempts`. It's traceability, never authorization: **the contract is still what decides**; a row only says an attempt was made and how it ended. HashKey is the only network where accreditation is **written** (`WRITABLE_CHAIN_IDS = [133]`).
 
-**Se comprueba el owner antes de escribir.** Un revert por falta de permisos llega envuelto en el detalle de cada transporte que viem intentó, y ahí es fácil confundirlo con un fallo de red. Preguntar `owner()` directamente da un mensaje exacto que dice qué wallet hay que autorizar. Si hay una transferencia `Ownable2Step` pendiente a nuestro nombre, se acepta en el momento.
+**Ownership is checked before writing.** A revert due to missing permissions arrives wrapped in the details of every transport viem tried, and it's easy to mistake for a network failure. Querying `owner()` directly gives an exact message stating which wallet needs to be authorized. If there's a pending `Ownable2Step` transfer to our name, it's accepted on the spot.
 
-**Reintento sin reaprobar.** El RPC de HSK testnet se cae y vuelve. Una acreditación fallida no es un error de datos, es una red que no respondió. `POST /v1/admin/institutions/:id/accredit/:chainId` reintenta solo esa red, sin tocar la aprobación de la institución.
+**Retry without re-approving.** The HSK testnet RPC goes down and comes back. A failed accreditation isn't a data error, it's a network that didn't respond. `POST /v1/admin/institutions/:id/accredit/:chainId` retries only that network, without touching the institution's approval.
 
-**Procedencia pública y sin autenticación** — [`provenance.ts`](apps/api/src/services/provenance.ts). Tres preguntas, las tres leídas del contrato:
+**Public provenance, no authentication required** — [`provenance.ts`](apps/api/src/services/provenance.ts). Three questions, all read straight from the contract:
 
-| Pregunta | Función | Contrato |
+| Question | Function | Contract |
 |---|---|---|
-| ¿Quién lo emitió? | `certificateIssuer(tokenId)` | TesseraCertificate |
-| ¿Estaba autorizado? | `isApprovedInstitution(issuer)` | TesseraRegistry |
-| ¿Puede haberse vendido? | `locked(tokenId)` | ERC-5192 |
+| Who issued it? | `certificateIssuer(tokenId)` | TesseraCertificate |
+| Were they authorized? | `isApprovedInstitution(issuer)` | TesseraRegistry |
+| Could it have been sold? | `locked(tokenId)` | ERC-5192 |
 
 ```bash
 curl "http://localhost:3001/v1/certificates/1/provenance?chainId=133"
 ```
 
-Es público **a propósito**: una afirmación de procedencia que solo puede comprobarse con una API key no prueba nada a un tercero. El endpoint tiene CORS abierto, acepta `?chainId=` para consultar cualquiera de las cuatro redes, y devuelve además **los comandos exactos para repetir la lectura sin usar Tessera**.
+It's public **on purpose**: a provenance claim that can only be checked with an API key doesn't prove anything to a third party. The endpoint has CORS wide open, accepts `?chainId=` to query any of the four networks, and also returns **the exact commands to repeat the read without using Tessera**.
 
-**Lo que no se puede hacer, dicho claramente.** El explorador de HashKey **no ofrece verificación de código fuente**, así que el bytecode no está publicado allí; la aplicación lo marca en `/status` con `verificationUnavailable: true` en vez de ocultarlo. Y el endpoint de respaldo que figuraba en la configuración (`hashkeychain-testnet.alt.technology`) **no existe**: su DNS no resuelve, y arrastraba un `fetch failed` dentro de errores que en realidad eran de permisos, mandando a diagnosticar caídas de red inexistentes. Se dejó un único endpoint real.
+**What can't be done, stated plainly.** HashKey's explorer **doesn't offer source-code verification**, so the bytecode isn't published there; the app flags this in `/status` with `verificationUnavailable: true` instead of hiding it. And the fallback endpoint that was listed in the config (`hashkeychain-testnet.alt.technology`) **doesn't exist**: its DNS doesn't resolve, and it was producing `fetch failed` errors mixed in with what were actually permission errors — sending people off to diagnose network outages that didn't exist.  A single real endpoint was kept.
 
 ---
 
-## 3. Contratos inteligentes
+## 3. Smart contracts
 
-Cuatro contratos en Solidity `0.8.36`, compilados con Foundry (`evm_version = cancun`, optimizador a 200 runs, `bytecode_hash = ipfs` para que los exploradores identifiquen el compilador exacto).
+Four Solidity `0.8.36` contracts, compiled with Foundry (`evm_version = cancun`, optimizer at 200 runs, `bytecode_hash = ipfs` so explorers can identify the exact compiler).
 
-Código fuente en el repositorio hermano `tessera-contracts/`.
+Source code lives in the sibling repository `tessera-contracts/`.
 
-### 3.1 TesseraRegistry — quién puede emitir
+### 3.1 TesseraRegistry — who can issue
 
-El registro de autoridad. El dueño del contrato aprueba instituciones; cada institución aprobada gestiona su propia lista de docentes.
+The authority registry. The contract owner approves institutions; each approved institution manages its own list of teachers.
 
 ```solidity
 function isApprovedInstitution(address institution) external view returns (bool);
 function isApprovedTeacher(address institution, address teacher) external view returns (bool);
 function institutionName(address institution) external view returns (string memory);
 
-function approveInstitution(address institution, string name) external;  // solo owner
-function revokeInstitution(address institution) external;                // solo owner
+function approveInstitution(address institution, string name) external;  // owner only
+function revokeInstitution(address institution) external;                // owner only
 ```
 
-**`Ownable2Step`:** transferir la propiedad exige que el nuevo dueño la acepte explícitamente. Un error de tipeo en la dirección no deja el contrato sin dueño.
+**`Ownable2Step`:** transferring ownership requires the new owner to explicitly accept it. A typo in the address doesn't leave the contract ownerless.
 
-**Revocación por *epochs*.** Los docentes se guardan como `mapping(address => mapping(address => uint256))` de epochs. Cuando se revoca una institución, su epoch avanza y **todos sus docentes quedan invalidados en una sola operación**, sin recorrer listas ni pagar gas proporcional al número de docentes.
+**Revocation by *epochs*.** Teachers are stored as `mapping(address => mapping(address => uint256))` of epochs. When an institution is revoked, its epoch advances and **all of its teachers are invalidated in a single operation**, with no list traversal and no gas cost proportional to the number of teachers.
 
-### 3.2 TesseraCertificate — el certificado soulbound
+### 3.2 TesseraCertificate — the soulbound certificate
 
 `ERC-721` + `ERC721Enumerable` + `ERC721URIStorage` + `ERC-5192`.
 
 ```solidity
-function locked(uint256 tokenId) external view returns (bool);         // ERC-5192: siempre true
+function locked(uint256 tokenId) external view returns (bool);         // ERC-5192: always true
 function certificateIssuer(uint256 tokenId) external view returns (address);
 function ownerOf(uint256 tokenId) external view returns (address);
 function tokenURI(uint256 tokenId) external view returns (string);
 function revoke(uint256 tokenId, string reason) external;
 ```
 
-**`certificateIssuer(tokenId)` es la función central del diseño.** Devuelve la dirección de la institución que emitió ese token concreto, leída del propio contrato. No pasa por ninguna API. Es lo que convierte la credencial en verificable de forma independiente.
+**`certificateIssuer(tokenId)` is the central function of the design.** It returns the address of the institution that issued that specific token, read from the contract itself. It doesn't go through any API. This is what makes the credential independently verifiable.
 
-**No transferible.** Cualquier `transferFrom` o `safeTransferFrom` revierte con `Soulbound()`. Solo el owner puede quemar un token en casos excepcionales.
+**Non-transferable.** Any `transferFrom` or `safeTransferFrom` reverts with `Soulbound()`. Only the owner can burn a token in exceptional cases.
 
-**Tres vías autorizadas de emisión:**
-1. La institución aprobada, directamente (`msg.sender == institution`).
-2. Un docente aprobado por esa institución.
-3. El `TesseraAutoIssuer`, si el owner lo configuró.
+**Three authorized issuance paths:**
+1. The approved institution, directly (`msg.sender == institution`).
+2. A teacher approved by that institution.
+3. The `TesseraAutoIssuer`, if configured by the owner.
 
-**`ERC721Enumerable` es deliberado.** Sin `totalSupply()` los exploradores no construyen el inventario de la colección y la ficha de cada token aparece vacía. Se descubrió en producción y motivó un redespliegue en Avalanche Fuji.
+**`ERC721Enumerable` is deliberate.** Without `totalSupply()`, explorers can't build the collection's inventory and each token's page shows up empty. This was discovered in production and led to a redeployment on Avalanche Fuji.
 
 ```solidity
 event CertificateMinted(uint256 indexed tokenId, address indexed to, address indexed institution, address minter, string uri);
@@ -226,9 +226,9 @@ event CertificateRevoked(uint256 indexed tokenId, string reason);
 event Locked(uint256 tokenId);   // ERC-5192
 ```
 
-### 3.3 TesseraBadge — insignias ERC-1155
+### 3.3 TesseraBadge — ERC-1155 badges
 
-Para hitos menores: participación, ranking, reconocimientos. También soulbound, con URI por token vía `ERC1155URIStorage`.
+For minor milestones: participation, rankings, recognitions. Also soulbound, with per-token URI via `ERC1155URIStorage`.
 
 ```solidity
 function mintBadge(address to, uint256 tokenId, uint256 amount, string tokenURI_, address institution) external;
@@ -237,9 +237,9 @@ function uri(uint256 tokenId) external view returns (string);
 event BadgeMinted(uint256 indexed tokenId, address indexed to, address indexed institution, uint256 amount, address minter, string uri);
 ```
 
-### 3.4 TesseraAutoIssuer — emisión delegada por firma EIP-712
+### 3.4 TesseraAutoIssuer — delegated issuance via EIP-712 signature
 
-Permite que el backend autorice una emisión **sin pagar el gas**: firma un payload tipado y cualquier relayer puede enviar la transacción.
+Lets the backend authorize an issuance **without paying gas**: it signs a typed payload and any relayer can submit the transaction.
 
 ```solidity
 struct IssuancePayload {
@@ -255,102 +255,102 @@ function nonces(address institution) external view returns (uint256);
 function DOMAIN_SEPARATOR() external view returns (bytes32);
 ```
 
-**Protecciones:**
+**Protections:**
 
-| Riesgo | Mitigación |
+| Risk | Mitigation |
 |---|---|
-| Reentrada | `ReentrancyGuard` |
-| Replay de firma | Nonce estrictamente creciente por institución |
-| Firma robada y usada tarde | `deadline` UNIX: la firma caduca |
-| Signer comprometido | El owner puede rotarlo |
+| Reentrancy | `ReentrancyGuard` |
+| Signature replay | Strictly increasing nonce per institution |
+| Stolen signature used later | UNIX `deadline`: the signature expires |
+| Compromised signer | The owner can rotate it |
 
-Dominio EIP-712: nombre `TesseraAutoIssuer`, versión `1`.
+EIP-712 domain: name `TesseraAutoIssuer`, version `1`.
 
 ---
 
-## 4. Redes desplegadas
+## 4. Deployed networks
 
-Cuatro redes, cada una con un propósito distinto y medido. **Solo una emite en cada momento**: la que apunte `POLYGON_CHAIN_ID`. Presentar las cuatro como si todas emitieran sería falso, y un explorador lo desmiente en segundos.
+Four networks, each with a distinct, measured purpose. **Only one issues at any given time**: whichever `POLYGON_CHAIN_ID` points to. Presenting all four as if they all minted would be false, and any explorer would disprove it in seconds.
 
-### Polygon Amoy · chainId 80002 · **emisión**
+### Polygon Amoy · chainId 80002 · **issuance**
 
 https://amoy.polygonscan.com
 
-| Contrato | Dirección |
+| Contract | Address |
 |---|---|
 | Registry | `0x472d08AEe5405b3Bc4D75A4EE093dA103adD0cEb` |
 | Certificate | `0x9571E4553636314A9A583B8c5c784d207D51F635` |
 | Badge | `0x873Dd9478aA6Aa9C3594eE741aCC7a220763BF1a` |
 | AutoIssuer | `0x34df4378BC382A9D1EC6a2656f679C4b46Dce22d` |
 
-**Por qué.** Gas barato y finalidad rápida. Una universidad con miles de egresados al año puede certificarlos a todos sin que el costo convierta la credencial en un lujo. Es lo que hace viable el volumen real.
+**Why.** Cheap gas and fast finality. A university with thousands of graduates a year can certify all of them without cost turning the credential into a luxury. It's what makes real volume viable.
 
-### Avalanche Fuji · chainId 43113 · **visualización**
+### Avalanche Fuji · chainId 43113 · **display**
 
 https://testnet.snowtrace.io
 
-| Contrato | Dirección |
+| Contract | Address |
 |---|---|
 | Registry | `0xE821fEC944c5BFadB769EC5235D9D09F7e951Dae` |
 | Certificate | `0x5F5164642D96cC3128AbF68019D72c426a895945` |
 | Badge | `0x5390b92176e316846e6b199d2746DE5b03232E04` |
 | AutoIssuer | `0x8f34224573A93086Ed7eA87c972DC70f5E5Bb814` |
 
-**Por qué.** PolygonScan Amoy no renderiza imágenes de NFT: sirve siempre un marcador de posición. Snowtrace muestra el diseño real del diploma. Una credencial que no se ve no funciona como credencial — el egresado necesita poder enseñarla a un empleador.
+**Why.** PolygonScan Amoy doesn't render NFT images: it always serves a placeholder. Snowtrace shows the diploma's actual design. A credential that can't be seen doesn't work as a credential — the graduate needs to be able to show it to an employer.
 
-Los certificados aquí son **réplicas**; el original vive en Amoy.
+Certificates here are **mirrors**; the original lives on Amoy.
 
-### Ethereum Sepolia · chainId 11155111 · **membresías**
+### Ethereum Sepolia · chainId 11155111 · **memberships**
 
 https://sepolia.etherscan.io
 
-| Contrato | Dirección |
+| Contract | Address |
 |---|---|
 | Registry | `0x2EEcED57D3BC4A0Be1C90F1cB655573aa969Eb3b` |
 | Certificate | `0x5c5018E212B6F295Af75E5Ff326b0bB3D375530a` |
 | Badge | `0xa98D116E8a59ae21C832a3d25407Caf3B603DeD2` |
 | AutoIssuer | `0x2017ee0C335A0f799562006B3d5DD00F345a5033` |
 
-**Por qué.** Unlock Protocol está desplegado aquí, así que el Lock que controla el acceso al contenido vive en la misma cadena que estos contratos.
+**Why.** Unlock Protocol is deployed here, so the Lock that controls access to content lives on the same chain as these contracts.
 
-### HashKey Chain Testnet · chainId 133 · **emisión institucional**
+### HashKey Chain Testnet · chainId 133 · **institutional issuance**
 
 https://testnet-explorer.hsk.xyz
 
-| Contrato | Dirección |
+| Contract | Address |
 |---|---|
 | Registry | `0xdD80FA4FA7781135d5B4fb67054EDCcF17E58DE4` |
 | Certificate | `0xbAfCc08c530075a6BB03d3306ead71acDD8f3D7b` |
 | Badge | `0x52B13E3F00079c00824E68DC9f1dBCc7D0BE808B` |
 | AutoIssuer | `0x2EEcED57D3BC4A0Be1C90F1cB655573aa969Eb3b` |
 
-**Por qué.** Cadena *compliance-first* para tokenización de activos del mundo real. Un diploma es exactamente eso: un activo real con emisor identificable. Donde la regulación exige emisor trazable, `certificateIssuer` responde on-chain.
+**Why.** A *compliance-first* chain for tokenizing real-world assets. A diploma is exactly that: a real asset with an identifiable issuer. Where regulation demands a traceable issuer, `certificateIssuer` answers on-chain.
 
-> El explorador de HashKey **no ofrece verificación de código fuente**, así que el bytecode no puede publicarse allí. La aplicación lo marca explícitamente en `/status` en vez de ocultarlo.
+> HashKey's explorer **doesn't offer source-code verification**, so the bytecode can't be published there. The app flags this explicitly in `/status` instead of hiding it.
 
 ---
 
-## 5. Cómo verificar un certificado sin confiar en nosotros
+## 5. How to verify a certificate without trusting us
 
-Esta es la prueba que importa. Abra el explorador de cualquiera de las redes, pegue la dirección del contrato **Certificate**, y use la pestaña *Read Contract*:
+This is the proof that matters. Open the explorer for any of the networks, paste the **Certificate** contract address, and use the *Read Contract* tab:
 
-| # | Llamada | Resultado esperado | Qué demuestra |
+| # | Call | Expected result | What it proves |
 |---|---|---|---|
-| 1 | `locked(tokenId)` | `true` | El certificado no es transferible (ERC-5192) |
-| 2 | `certificateIssuer(tokenId)` | `0x…` | Qué institución lo emitió |
-| 3 | `isApprovedInstitution(<resultado de 2>)` en **Registry** | `true` | Esa institución estaba autorizada |
-| 4 | `ownerOf(tokenId)` | `0x…` | La wallet del estudiante |
-| 5 | `tokenURI(tokenId)` | URL | La metadata: imagen y atributos |
+| 1 | `locked(tokenId)` | `true` | The certificate is non-transferable (ERC-5192) |
+| 2 | `certificateIssuer(tokenId)` | `0x…` | Which institution issued it |
+| 3 | `isApprovedInstitution(<result of 2>)` on **Registry** | `true` | That institution was authorized |
+| 4 | `ownerOf(tokenId)` | `0x…` | The student's wallet |
+| 5 | `tokenURI(tokenId)` | URL | The metadata: image and attributes |
 
-**Cinco llamadas, ninguna a la API de Tessera.** Ese es el punto entero del diseño: la credencial no depende de que nosotros sigamos existiendo.
+**Five calls, none of them to Tessera's API.** That's the whole point of the design: the credential doesn't depend on us continuing to exist.
 
-También desde la aplicación:
+Also available from the app:
 
-- **`/verify`** — pegue un ID, suba el PDF del certificado o escanee su QR. Sin cuenta.
-- **`/verify/<tokenId>`** — ficha con panel de procedencia: emisor, si está aprobado en el Registry, si es transferible, y los comandos exactos para repetir la comprobación usted mismo.
-- **`/status`** — estado operativo en vivo y las cuatro redes con sus contratos.
+- **`/verify`** — paste an ID, upload the certificate PDF, or scan its QR code. No account needed.
+- **`/verify/<tokenId>`** — a detail page with a provenance panel: issuer, whether it's approved in the Registry, whether it's transferable, and the exact commands to repeat the check yourself.
+- **`/status`** — live operational status and all four networks with their contracts.
 
-Endpoint público, sin autenticación:
+Public endpoint, no authentication:
 
 ```bash
 curl -X POST http://localhost:3001/v1/certificates/verify \
@@ -360,116 +360,116 @@ curl -X POST http://localhost:3001/v1/certificates/verify \
 
 ---
 
-## 6. Arquitectura
+## 6. Architecture
 
-Monorepo con Turborepo y pnpm workspaces.
+Monorepo using Turborepo and pnpm workspaces.
 
 ```
 tessera/
 ├── apps/
 │   ├── api/              Fastify 5 · Drizzle ORM · BullMQ
-│   │   ├── src/modules/     20 módulos de rutas
-│   │   ├── src/services/    Lógica de negocio
-│   │   └── src/workers/     7 workers de cola
+│   │   ├── src/modules/     20 route modules
+│   │   ├── src/services/    Business logic
+│   │   └── src/workers/     7 queue workers
 │   └── web/              Next.js 15 App Router · React 19
 │       └── src/app/
-│           ├── (public)/    Landing, catálogo, verificación
-│           └── (app)/       Paneles: admin · institution · teacher · student
+│           ├── (public)/    Landing, catalog, verification
+│           └── (app)/       Dashboards: admin · institution · teacher · student
 ├── packages/
-│   ├── contracts/        ABIs tipados · helpers EIP-712 · direcciones
-│   ├── db/               Esquema Drizzle · 26 migraciones SQL
-│   ├── i18n/             Diccionario EN/ES · 1613 claves por idioma
-│   └── shared/           Tipos y constantes compartidas
-└── ../tessera-contracts/ (repo hermano) Solidity · Foundry
+│   ├── contracts/        Typed ABIs · EIP-712 helpers · addresses
+│   ├── db/               Drizzle schema · 26 SQL migrations
+│   ├── i18n/             EN/ES dictionary · 1613 keys per language
+│   └── shared/            Shared types and constants
+└── ../tessera-contracts/ (sibling repo) Solidity · Foundry
 ```
 
-**Base de datos:** PostgreSQL 17, **46 tablas**. Principales: `certificates`, `institutions`, `users`, `courses`, `modules`, `topics`, `assessments`, `enrollments`, `certificate_mirrors`, `portal_unlocks`, `credit_ledger`, `api_keys`, `webhook_endpoints`.
+**Database:** PostgreSQL 17, **46 tables**. Main ones: `certificates`, `institutions`, `users`, `courses`, `modules`, `topics`, `assessments`, `enrollments`, `certificate_mirrors`, `portal_unlocks`, `credit_ledger`, `api_keys`, `webhook_endpoints`.
 
-**Colas (BullMQ sobre Redis):** `certificate`, `badge`, `webhook`, `email`, `indexer`, `gdprExport`, `gdprDeletion`, `paymentSync`.
+**Queues (BullMQ on Redis):** `certificate`, `badge`, `webhook`, `email`, `indexer`, `gdprExport`, `gdprDeletion`, `paymentSync`.
 
-### 6.1 El ciclo de vida de un certificado
+### 6.1 A certificate's lifecycle
 
 ```
-Institución encola   →  POST /v1/me/certificates/issue  (hasta 500 a la vez)
+Institution queues it →  POST /v1/me/certificates/issue  (up to 500 at once)
         ↓
-Débito de crédito    →  atómico e idempotente por certificateId
+Credit debit           →  atomic and idempotent per certificateId
         ↓
-Generar imagen       →  SVG → PNG con los datos del estudiante
+Generate image          →  SVG → PNG with the student's data
         ↓
-Fijar en IPFS        →  imagen + metadata, ANTES de acuñar
+Pin to IPFS              →  image + metadata, BEFORE minting
         ↓
-Acuñar on-chain      →  mint en la red principal
+Mint on-chain             →  mint on the primary network
         ↓
-Replicar (opcional)  →  redes espejo; si falla, el original sigue válido
+Mirror (optional)        →  mirror networks; if it fails, the original stays valid
 ```
 
-**Por qué se fija en IPFS antes de acuñar.** Un indexador de NFT lee el `tokenURI` **una sola vez** y cachea el fallo. Si se acuñara antes de que Pinata confirme, el certificado quedaría sin imagen de forma permanente aunque fuera perfectamente válido.
+**Why it's pinned to IPFS before minting.** An NFT indexer reads the `tokenURI` **only once** and caches a failure. If minting happened before Pinata confirmed, the certificate would permanently end up without an image even though it was perfectly valid.
 
-**Por qué la réplica nunca lanza hacia el worker principal.** El certificado existe cuando la red principal lo confirma. Un mint no se puede deshacer: si la réplica falla, se registra y se puede reintentar, pero el original sigue siendo válido.
+**Why the mirror step never blocks the main worker.** The certificate exists once the primary network confirms it. A mint can't be undone: if the mirror fails, it's logged and can be retried, but the original stays valid.
 
-### 6.2 Bilingüismo
+### 6.2 Bilingual support
 
-`@tessera/i18n` expone `useT()` (diccionario) y `useI18n()` (diccionario + locale + setter). Inglés por defecto, español conmutable **sin recargar la página**.
+`@tessera/i18n` exposes `useT()` (dictionary) and `useI18n()` (dictionary + locale + setter). English by default, switchable to Spanish **without reloading the page**.
 
-**1613 claves en cada idioma. Cero faltantes, cero sobrantes** — verificado comparando la estructura completa de ambos archivos.
+**1613 keys in each language. Zero missing, zero extra** — verified by comparing the full structure of both files.
 
-Dos excepciones deliberadas y documentadas en el código:
+Two deliberate, documented exceptions in the code:
 
-- **Server Actions** — corren en el servidor sin contexto de React, así que no pueden leer el idioma activo con `useT()`. Sus mensajes de error quedan en español.
-- **`global-error.tsx`** — reemplaza el árbol completo de providers, incluido el de i18n. Forzar el hook ahí podría romper el propio boundary de errores y dejar la pantalla en blanco.
+- **Server Actions** — run on the server with no React context, so they can't read the active locale via `useT()`. Their error messages stay in Spanish.
+- **`global-error.tsx`** — replaces the entire provider tree, including the i18n provider. Forcing the hook there could break the error boundary itself and leave a blank screen.
 
 ---
 
-## 7. Levantar el proyecto en local
+## 7. Running the project locally
 
-### 7.1 Requisitos previos
+### 7.1 Prerequisites
 
-| Requisito | Versión | Comprobar con |
+| Requirement | Version | Check with |
 |---|---|---|
 | Node.js | ≥ 22.11.0 | `node -v` |
 | pnpm | 11.3.0 | `pnpm -v` |
-| Docker Desktop | reciente, **arrancado** | `docker info` |
-| Git | cualquiera | `git --version` |
+| Docker Desktop | recent, **running** | `docker info` |
+| Git | any | `git --version` |
 
-Si no tiene pnpm:
+If you don't have pnpm:
 
 ```bash
 corepack enable
 corepack prepare pnpm@11.3.0 --activate
 ```
 
-### 7.2 Clonar e instalar
+### 7.2 Clone and install
 
 ```bash
-git clone <url-del-repositorio>
+git clone <repository-url>
 cd tessera
 pnpm install
 ```
 
-### 7.3 Los DOS archivos de entorno
+### 7.3 The TWO environment files
 
-Este es el paso donde más gente se atasca. **Hacen falta dos archivos**, porque el API y el frontend cargan su configuración de sitios distintos.
+This is where most people get stuck. **Two files are needed**, because the API and the frontend load their config from different places.
 
-**Archivo 1 — `.env` en la raíz** (lo usan API y workers):
+**File 1 — `.env` at the root** (used by the API and workers):
 
 ```bash
 cp .env.example .env
 ```
 
-**Archivo 2 — `apps/web/.env.local`** (lo usa Next.js, que **no** lee el `.env` de la raíz):
+**File 2 — `apps/web/.env.local`** (used by Next.js, which does **not** read the root `.env`):
 
 ```bash
 cat > apps/web/.env.local <<'EOF'
-# Auth.js v5 — debe ser el MISMO AUTH_SECRET que el .env de la raíz
+# Auth.js v5 — must be the SAME AUTH_SECRET as the root .env
 AUTH_SECRET=dev-secret-change-me-please-32-chars-minimum-ok
 AUTH_URL=http://localhost:3000
 AUTH_TRUST_HOST=true
 
-# API de Tessera
+# Tessera API
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_AUTH_URL=http://localhost:3000
 
-# Blockchain — lecturas desde el navegador
+# Blockchain — reads from the browser
 NEXT_PUBLIC_POLYGON_CHAIN_ID=80002
 NEXT_PUBLIC_POLYGON_RPC_URL=https://polygon-amoy-bor-rpc.publicnode.com
 NEXT_PUBLIC_CONTRACT_REGISTRY=0x472d08AEe5405b3Bc4D75A4EE093dA103adD0cEb
@@ -478,90 +478,90 @@ NEXT_PUBLIC_CONTRACT_BADGE=0x873Dd9478aA6Aa9C3594eE741aCC7a220763BF1a
 EOF
 ```
 
-> **`AUTH_SECRET` debe coincidir** en los dos archivos, y tener **32 caracteres o más**. Si no coinciden, el login falla sin mensaje claro. Ambos archivos están en `.gitignore`.
+> **`AUTH_SECRET` must match** across both files, and be **32 characters or more**. If they don't match, login fails with no clear message. Both files are in `.gitignore`.
 
-> El API lee, en este orden: `.env.local` y `.env` de la raíz, luego `.env.local` y `.env` de `apps/api/`. El primero que define una variable gana.
+> The API reads, in this order: root `.env.local` and `.env`, then `apps/api/`'s `.env.local` and `.env`. The first one to define a variable wins.
 
-### 7.4 Levantar la infraestructura
+### 7.4 Bring up the infrastructure
 
 ```bash
 docker compose up -d
 ```
 
-Cuatro contenedores:
+Four containers:
 
-| Servicio | Imagen | Puertos | Acceso |
+| Service | Image | Ports | Access |
 |---|---|---|---|
 | PostgreSQL | `postgres:17-alpine` | 5432 | `tessera` / `tessera` / db `tessera` |
-| Redis | `redis:7-alpine` | 6379 | sin contraseña |
+| Redis | `redis:7-alpine` | 6379 | no password |
 | MailHog | `mailhog/mailhog` | 1025 SMTP · **8025 web** | http://localhost:8025 |
-| MinIO | `quay.io/minio/minio` | 9000 API · **9001 consola** | `minioadmin` / `minioadmin` |
+| MinIO | `quay.io/minio/minio` | 9000 API · **9001 console** | `minioadmin` / `minioadmin` |
 
-Comprobar que los cuatro están arriba:
+Check that all four are up:
 
 ```bash
 docker compose ps
 ```
 
-**Crear el bucket de MinIO** (el compose local no lo hace solo). Entre en http://localhost:9001, inicie sesión con `minioadmin`/`minioadmin` y cree un bucket llamado **`tessera-assets`**.
+**Create the MinIO bucket** (the local compose setup doesn't do this automatically). Go to http://localhost:9001, log in with `minioadmin`/`minioadmin`, and create a bucket named **`tessera-assets`**.
 
-### 7.5 Migraciones y datos de ejemplo
+### 7.5 Migrations and sample data
 
 ```bash
-pnpm db:migrate     # aplica las 26 migraciones
-pnpm db:seed        # crea las 4 cuentas demo
+pnpm db:migrate     # applies the 26 migrations
+pnpm db:seed        # creates the 4 demo accounts
 ```
 
-El seed crea **solo cuatro usuarios y una institución**. No crea certificados ni cursos: eso se hace desde la aplicación.
+The seed only creates **four users and one institution**. It doesn't create certificates or courses — that's done from the app.
 
-| Rol | Email | Contraseña |
+| Role | Email | Password |
 |---|---|---|
-| Administrador de plataforma | `admin@tessera.io` | `admin123` |
-| Institución | `institution@tessera.io` | `institution123` |
-| Docente | `teacher@tessera.io` | `teacher123` |
-| Estudiante | `student@tessera.io` | `student123` |
+| Platform admin | `admin@tessera.io` | `admin123` |
+| Institution | `institution@tessera.io` | `institution123` |
+| Teacher | `teacher@tessera.io` | `teacher123` |
+| Student | `student@tessera.io` | `student123` |
 
-### 7.6 Arrancar la aplicación
+### 7.6 Start the app
 
-Tres procesos. Lo más cómodo es una terminal para cada uno:
+Three processes. It's most convenient to use one terminal per process:
 
 ```bash
-# Terminal 1 — API en :3001
+# Terminal 1 — API on :3001
 pnpm api:dev
 
-# Terminal 2 — Workers (procesan las colas)
+# Terminal 2 — Workers (process the queues)
 pnpm workers:dev
 
-# Terminal 3 — Frontend en :3000
+# Terminal 3 — Frontend on :3000
 pnpm --filter @tessera/web dev
 ```
 
-O los tres a la vez, en una sola terminal:
+Or all three at once, in a single terminal:
 
 ```bash
 pnpm dev
 ```
 
-> **Los workers importan.** Sin ellos la aplicación se ve y navega perfectamente, pero los certificados se quedan en estado `queued` para siempre: nadie procesa la cola.
+> **The workers matter.** Without them the app looks and navigates perfectly fine, but certificates stay stuck in `queued` state forever: nothing processes the queue.
 
-### 7.7 Comprobar que todo está vivo
+### 7.7 Check that everything is alive
 
-**Abrir http://localhost:3000** y entrar con cualquiera de las cuatro cuentas.
+**Open http://localhost:3000** and log in with any of the four accounts.
 
-Estado de las dependencias:
+Dependency status:
 
 ```bash
 curl http://localhost:3001/v1/health
 ```
 
-Devuelve el estado de 14 comprobaciones: base de datos, Redis, RPC, Arweave, Pinata, signer, fondos del signer, wallets de custodia, réplicas, OpenBao, webhook de Stripe, almacenamiento de objetos y correo.
+Returns the status of 14 checks: database, Redis, RPC, Arweave, Pinata, signer, signer funds, custody wallets, mirrors, OpenBao, Stripe webhook, object storage, and email.
 
-En una instalación limpia verá varias como `not_configured` o `mock`. **Es lo esperado** y no impide usar la plataforma.
+On a fresh install, several will show as `not_configured` or `mock`. **That's expected** and doesn't prevent using the platform.
 
-### 7.8 Empezar de cero
+### 7.8 Start from scratch
 
 ```bash
-docker compose down -v      # borra contenedores Y volúmenes
+docker compose down -v      # removes containers AND volumes
 docker compose up -d
 pnpm db:migrate
 pnpm db:seed
@@ -569,39 +569,39 @@ pnpm db:seed
 
 ---
 
-## 8. Configuración completa
+## 8. Full configuration
 
-Con los valores por defecto **la plataforma arranca y funciona**. Lo que no esté configurado degrada con elegancia en vez de romper.
+With default values **the platform starts up and works**. Anything not configured degrades gracefully instead of breaking.
 
-### 8.1 Qué pasa si no configura cada cosa
+### 8.1 What happens if you don't configure each thing
 
-| Variable | Sin configurar | Para qué sirve |
+| Variable | If not configured | What it's for |
 |---|---|---|
-| `SIGNER_PRIVATE_KEY` | La emisión on-chain **se simula**; todo lo demás funciona | Acuñar certificados de verdad |
-| `ARWEAVE_JWK_JSON` | Storage en modo mock determinista | Metadata permanente en Arweave |
-| `PINATA_JWT` | Storage en modo mock determinista | Fijar imagen y metadata en IPFS |
-| `RESEND_API_KEY` | Los correos van a **MailHog** (:8025) | Envío real de correo |
-| `STRIPE_SECRET_KEY` | Pagos desactivados | Suscripciones y paquetes de créditos |
-| `UNLOCK_DEFAULT_LOCK_ADDRESS` | Solo es la sugerencia del panel | Cada curso guarda su propio Lock |
-| `MIRROR_CHAIN_IDS` | No se replica en redes espejo | Certificados visibles en Snowtrace |
-| `WEB3SIGNER_URL` / `OPENBAO_*` | Se usa `SIGNER_PRIVATE_KEY` | Custodia de claves en producción |
-| `SENTRY_DSN` | Sin telemetría de errores | Observabilidad |
+| `SIGNER_PRIVATE_KEY` | On-chain issuance is **simulated**; everything else works | Minting real certificates |
+| `ARWEAVE_JWK_JSON` | Storage runs in deterministic mock mode | Permanent metadata on Arweave |
+| `PINATA_JWT` | Storage runs in deterministic mock mode | Pinning image and metadata to IPFS |
+| `RESEND_API_KEY` | Emails go to **MailHog** (:8025) | Real email delivery |
+| `STRIPE_SECRET_KEY` | Payments disabled | Subscriptions and credit packs |
+| `UNLOCK_DEFAULT_LOCK_ADDRESS` | Just a suggestion on the dashboard | Every course stores its own Lock |
+| `MIRROR_CHAIN_IDS` | No mirroring to secondary networks | Certificates visible on Snowtrace |
+| `WEB3SIGNER_URL` / `OPENBAO_*` | `SIGNER_PRIVATE_KEY` is used instead | Key custody in production |
+| `SENTRY_DSN` | No error telemetry | Observability |
 
-### 8.2 Variables principales
+### 8.2 Main variables
 
-**API y autenticación**
+**API and authentication**
 
 ```bash
 API_PORT=3001
 API_PUBLIC_URL=http://localhost:3001
-API_CORS_ORIGINS=http://localhost:3000    # debe apuntar al frontend
-AUTH_SECRET=<32 caracteres o más>          # el mismo en los dos archivos .env
+API_CORS_ORIGINS=http://localhost:3000    # must point to the frontend
+AUTH_SECRET=<32 characters or more>        # same value in both .env files
 AUTH_URL=http://localhost:3000
 JWT_EXPIRES_IN=4h
 REFRESH_TOKEN_EXPIRES_IN=30d
 ```
 
-**Datos**
+**Data**
 
 ```bash
 DATABASE_URL=postgres://tessera:tessera@localhost:5432/tessera
@@ -613,9 +613,9 @@ REDIS_URL=redis://localhost:6379
 
 ```bash
 POLYGON_CHAIN=polygonAmoy
-POLYGON_CHAIN_ID=80002                     # ← la red que EMITE
+POLYGON_CHAIN_ID=80002                     # ← the network that ISSUES
 POLYGON_RPC_URL=https://polygon-amoy-bor-rpc.publicnode.com
-POLYGON_RPC_URL_FALLBACK=                  # RPC de respaldo, opcional
+POLYGON_RPC_URL_FALLBACK=                  # backup RPC, optional
 
 CONTRACT_REGISTRY_ADDRESS=0x472d08AEe5405b3Bc4D75A4EE093dA103adD0cEb
 CONTRACT_CERTIFICATE_ADDRESS=0x9571E4553636314A9A583B8c5c784d207D51F635
@@ -623,40 +623,40 @@ CONTRACT_BADGE_ADDRESS=0x873Dd9478aA6Aa9C3594eE741aCC7a220763BF1a
 CONTRACT_AUTO_ISSUER_ADDRESS=0x34df4378BC382A9D1EC6a2656f679C4b46Dce22d
 ```
 
-**Emisión real (opcional)**
+**Real issuance (optional)**
 
 ```bash
 SIGNER_PRIVATE_KEY=0x...
 BACKEND_SIGNER_ADDRESS=0x...
 ```
 
-> La wallet de `SIGNER_PRIVATE_KEY` debe ser la **owner de TesseraRegistry**. Si no lo es, aprobar una institución falla con *"El signer de Tessera (0x…) no controla TesseraRegistry"*.
+> The `SIGNER_PRIVATE_KEY` wallet must be the **owner of TesseraRegistry**. If it isn't, approving an institution fails with *"Tessera's signer (0x…) does not control TesseraRegistry"*.
 >
-> Necesita fondos de testnet. Faucets: [Polygon Amoy](https://faucet.polygon.technology) · [Avalanche Fuji](https://core.app/tools/testnet-faucet) · [Sepolia](https://sepoliafaucet.com).
+> It needs testnet funds. Faucets: [Polygon Amoy](https://faucet.polygon.technology) · [Avalanche Fuji](https://core.app/tools/testnet-faucet) · [Sepolia](https://sepoliafaucet.com).
 >
-> El API **detecta y avisa** en el arranque y en `/v1/health` si usa una clave conocida de Anvil o Hardhat. Son públicas: sirven para una cadena local efímera, nunca para una red real.
+> The API **detects and warns** at startup and in `/v1/health` if it's using a known Anvil or Hardhat key. These are public: fine for an ephemeral local chain, never for a real network.
 
-**Réplicas en redes espejo (opcional)**
+**Mirror networks (optional)**
 
 ```bash
-MIRROR_CHAIN_IDS=43113                     # vacío = no replicar
-MIRROR_SIGNER_PRIVATE_KEY=0x...            # clave propia, distinta de la principal
-MIRROR_RPC_URLS_FUJI=                      # RPC privados, si los públicos bloquean
+MIRROR_CHAIN_IDS=43113                     # empty = don't mirror
+MIRROR_SIGNER_PRIVATE_KEY=0x...            # separate key from the main one
+MIRROR_RPC_URLS_FUJI=                      # private RPCs, if public ones are blocked
 ```
 
-> La réplica necesita su propia clave porque Web3Signer arranca con un único `--chain-id` y no puede firmar para otra cadena. Es una wallet de bajo valor: solo paga gas de testnet.
+> Mirroring needs its own key because Web3Signer starts with a single `--chain-id` and can't sign for another chain. It's a low-value wallet: it only pays testnet gas.
 
-**Unlock Protocol (opcional)**
+**Unlock Protocol (optional)**
 
 ```bash
-UNLOCK_DEFAULT_LOCK_ADDRESS=               # crear en app.unlock-protocol.com
+UNLOCK_DEFAULT_LOCK_ADDRESS=               # create at app.unlock-protocol.com
 UNLOCK_DEFAULT_CHAIN_ID=11155111           # Ethereum Sepolia
-UNLOCK_RPC_URL=                            # vacío = RPC públicos
+UNLOCK_RPC_URL=                            # empty = public RPCs
 ```
 
-> Cree el Lock en [app.unlock-protocol.com](https://app.unlock-protocol.com) con la wallet conectada a **Sepolia**, opción *Deploy a custom membership*. Recomendado: precio mayor que cero y duración finita, para que la expiración se note al probar.
+> Create the Lock at [app.unlock-protocol.com](https://app.unlock-protocol.com) with your wallet connected to **Sepolia**, using the *Deploy a custom membership* option. Recommended: a price greater than zero and a finite duration, so expiration is noticeable when testing.
 
-**Almacenamiento**
+**Storage**
 
 ```bash
 OBJECT_STORAGE_PROVIDER=minio
@@ -666,140 +666,140 @@ S3_SECRET_ACCESS_KEY=minioadmin
 S3_BUCKET=tessera-assets
 ```
 
-### 8.3 Todos los comandos
+### 8.3 All commands
 
 ```bash
-# Desarrollo
-pnpm dev                  # los tres procesos a la vez
-pnpm api:dev              # solo el API
-pnpm workers:dev          # solo los workers
+# Development
+pnpm dev                  # all three processes at once
+pnpm api:dev              # API only
+pnpm workers:dev          # workers only
 pnpm --filter @tessera/web dev
 
-# Base de datos
-pnpm db:migrate           # aplicar migraciones
-pnpm db:seed              # cuentas demo
-pnpm db:generate          # generar migración tras cambiar el esquema
-pnpm db:studio            # explorador visual de la base
+# Database
+pnpm db:migrate           # apply migrations
+pnpm db:seed              # demo accounts
+pnpm db:generate          # generate a migration after a schema change
+pnpm db:studio            # visual database browser
 
-# Calidad
-pnpm typecheck            # TypeScript en todo el monorepo
+# Quality
+pnpm typecheck            # TypeScript across the monorepo
 pnpm lint                 # ESLint
 pnpm test                 # Vitest
-pnpm build                # build de producción
-pnpm format               # Prettier
+pnpm build                # production build
+pnpm format                # Prettier
 ```
 
 ---
 
-## 9. Verificación y pruebas
+## 9. Verification and testing
 
-### 9.1 La aplicación
+### 9.1 The app
 
 ```bash
-pnpm typecheck    # TypeScript — sin errores
+pnpm typecheck    # TypeScript — no errors
 pnpm lint         # ESLint
-pnpm test         # Vitest — 231 casos en 24 archivos
-pnpm build        # build de producción — 72 rutas
+pnpm test         # Vitest — 231 cases across 24 files
+pnpm build        # production build — 72 routes
 ```
 
-La suite se concentra en los servicios del API: emisión de certificados, metadata, obra gráfica, réplicas multi-cadena, procedencia, verificación de Unlock, acceso a cursos, almacenamiento, pagos y webhooks.
+The suite focuses on the API's services: certificate issuance, metadata, artwork, multi-chain mirroring, provenance, Unlock verification, course access, storage, payments, and webhooks.
 
-> **Un fallo conocido.** `certificate-mirror.test.ts` › *"no replica si MIRROR_CHAIN_IDS esta vacio"* falla por **timeout de 5 s**: ese test alcanza un RPC real y cae por red o por certificados TLS, no por el código. Los otros 230 pasan. Se aísla con `pnpm --filter @tessera/api test -- certificate-mirror`.
+> **A known failure.** `certificate-mirror.test.ts` › *"does not mirror when MIRROR_CHAIN_IDS is empty"* fails on a **5s timeout**: that test hits a real RPC and fails due to network or TLS certificate issues, not the code. The other 230 pass. Isolate it with `pnpm --filter @tessera/api test -- certificate-mirror`.
 
-### 9.2 Los contratos
+### 9.2 The contracts
 
-Desde `tessera-contracts/`. Todo corre dentro de Docker, **no hace falta instalar Foundry**:
+From `tessera-contracts/`. Everything runs inside Docker, **Foundry doesn't need to be installed**:
 
 ```bash
-make build           # compilar
-make test            # 83 tests, fuzz a 1024 runs
-make test-ci         # fuzz a 10.000 runs
-make coverage        # reporte lcov
-make gas             # reporte de gas
-make fmt-check       # formato
+make build           # compile
+make test            # 83 tests, fuzz at 1024 runs
+make test-ci         # fuzz at 10,000 runs
+make coverage        # lcov report
+make gas             # gas report
+make fmt-check       # formatting
 ```
 
-Incluye **tests de invariantes** (`test/invariant/SoulboundInvariant.t.sol`) que comprueban de forma exhaustiva la propiedad central del sistema: **un certificado nunca puede cambiar de dueño**, hagas lo que hagas.
+Includes **invariant tests** (`test/invariant/SoulboundInvariant.t.sol`) that exhaustively check the system's central property: **a certificate can never change owner**, no matter what you do.
 
-Despliegue y validación:
+Deployment and validation:
 
 ```bash
 make deploy-amoy
-make deploy-network NET=fuji            # o hsk, sepolia
-make validate-network NET=fuji          # valida la topología desplegada
-make verify-network NET=fuji            # publica el código en el explorador
-make approve-institution-network NET=fuji ADDRESS=0x... NAME="Universidad X"
+make deploy-network NET=fuji            # or hsk, sepolia
+make validate-network NET=fuji          # validates the deployed topology
+make verify-network NET=fuji            # publishes the code on the explorer
+make approve-institution-network NET=fuji ADDRESS=0x... NAME="University X"
 ```
 
 ---
 
-## 10. Solución de problemas
+## 10. Troubleshooting
 
-**El API no arranca y se queja de una variable**
+**The API won't start and complains about a variable**
 
-`envalid` valida la configuración al inicio y corta si falta algo obligatorio. El mensaje dice exactamente cuál. Casi siempre es `AUTH_SECRET` con menos de 32 caracteres.
+`envalid` validates the config at startup and stops if something required is missing. The message says exactly which one. It's almost always `AUTH_SECRET` being shorter than 32 characters.
 
-**El login no funciona, sin mensaje claro**
+**Login doesn't work, with no clear message**
 
-`AUTH_SECRET` no coincide entre `.env` (raíz) y `apps/web/.env.local`. Deben ser idénticos.
+`AUTH_SECRET` doesn't match between the root `.env` and `apps/web/.env.local`. They must be identical.
 
-**Los certificados se quedan en `queued` para siempre**
+**Certificates stay stuck in `queued` forever**
 
-Los workers no están corriendo. Levante `pnpm workers:dev`.
+The workers aren't running. Start them with `pnpm workers:dev`.
 
-**`ECONNREFUSED` contra la base de datos o Redis**
+**`ECONNREFUSED` against the database or Redis**
 
-Docker no está arrancado, o los contenedores no subieron. Compruebe con `docker compose ps` y levante con `docker compose up -d`.
+Docker isn't running, or the containers didn't come up. Check with `docker compose ps` and bring them up with `docker compose up -d`.
 
-**Conflicto en el puerto 9000**
+**Port 9000 conflict**
 
-`.env.example` trae `S3_ENDPOINT=http://localhost:9000` (MinIO) y `WEB3SIGNER_URL=http://localhost:9000` (Web3Signer) apuntando al mismo puerto. **En local MinIO ocupa el 9000.** Deje `WEB3SIGNER_URL` vacío mientras no use Web3Signer, o el API intentará firmar contra MinIO.
+`.env.example` ships with `S3_ENDPOINT=http://localhost:9000` (MinIO) and `WEB3SIGNER_URL=http://localhost:9000` (Web3Signer) pointing at the same port. **Locally, MinIO occupies port 9000.** Leave `WEB3SIGNER_URL` empty while you're not using Web3Signer, or the API will try to sign against MinIO.
 
-**"El signer de Tessera (0x…) no controla TesseraRegistry"**
+**"Tessera's signer (0x…) does not control TesseraRegistry"**
 
-La wallet de `SIGNER_PRIVATE_KEY` no es la owner del Registry. Solo esa wallet puede aprobar instituciones on-chain.
+The `SIGNER_PRIVATE_KEY` wallet is not the Registry's owner. Only that wallet can approve institutions on-chain.
 
-**Aviso de clave de desarrollo conocida al arrancar**
+**Warning about a known development key at startup**
 
-Está usando una clave pública de Anvil o Hardhat. En local es legítimo y no bloquea nada; el aviso existe para que nadie la lleve a un servidor creyendo que es propia.
+You're using a public Anvil or Hardhat key. That's fine locally and doesn't block anything; the warning exists so nobody takes it to a server thinking it's their own.
 
-**El frontend no encuentra el API**
+**The frontend can't find the API**
 
-`NEXT_PUBLIC_API_URL` debe apuntar a `http://localhost:3001`. Y ojo: las variables `NEXT_PUBLIC_*` **se hornean en el build**. Si las cambia, hay que reconstruir, no basta con reiniciar.
+`NEXT_PUBLIC_API_URL` must point to `http://localhost:3001`. And heads up: `NEXT_PUBLIC_*` variables **are baked in at build time**. If you change them, you need to rebuild, not just restart.
 
-**No llegan los correos**
+**No emails arrive**
 
-Es lo esperado sin `RESEND_API_KEY`. Los correos van a MailHog: http://localhost:8025
+That's expected without `RESEND_API_KEY`. Emails go to MailHog: http://localhost:8025
 
 ---
 
-## 11. Alcance real del proyecto
+## 11. Actual project scope
 
-**Lo que está hecho y funciona:**
+**What's done and working:**
 
-- Cuatro contratos auditables desplegados en cuatro redes, con 83 tests incluyendo invariantes de no-transferibilidad.
-- Emisión de certificados con metadata permanente en IPFS/Arweave, procesada por colas con reintentos.
-- Verificación pública sin cuenta: por ID, por PDF o por QR.
-- Réplica multi-cadena con reintento, que nunca compromete el certificado original.
-- Cursos token-gated con Unlock Protocol verificado on-chain **en el servidor**.
-- Cuatro paneles por rol, con permisos diferenciados.
-- API pública con claves, scopes, límites de tasa y webhooks firmados con HMAC.
-- Interfaz bilingüe EN/ES con 1613 claves por idioma, conmutable sin recargar.
+- Four auditable contracts deployed across four networks, with 83 tests including non-transferability invariants.
+- Certificate issuance with permanent metadata on IPFS/Arweave, processed via retrying queues.
+- Public verification with no account: by ID, by PDF, or by QR code.
+- Multi-chain mirroring with retries, which never compromises the original certificate.
+- Token-gated courses with Unlock Protocol verified on-chain **on the server**.
+- Four role-based dashboards, with differentiated permissions.
+- Public API with keys, scopes, rate limits, and HMAC-signed webhooks.
+- Bilingual EN/ES interface with 1613 keys per language, switchable without reloading.
 
-**Lo que no, dicho sin adornos:**
+**What isn't, stated plainly:**
 
-- **Todo es testnet.** No hay despliegue en mainnet.
-- El explorador de HashKey **no permite verificar código fuente**, así que allí el bytecode no está publicado.
-- Algunas utilidades de formato —fechas, números, precios— siguen fijas en español (`es-PE`). Documentado en el código como pendiente.
-- Las áreas de **institución** y **docente** conservan textos en español a la espera de traducción; el resto de la aplicación es bilingüe.
-- Un test falla por red, como se explica en la sección 9.1.
+- **Everything is testnet.** There is no mainnet deployment.
+- HashKey's explorer **doesn't support source-code verification**, so the bytecode isn't published there.
+- Some formatting utilities — dates, numbers, prices — are still hardcoded to Spanish (`es-PE`). Documented in the code as pending.
+- The **institution** and **teacher** areas still have Spanish-only text pending translation; the rest of the app is bilingual.
+- One test fails due to network issues, as explained in section 9.1.
 
 ---
 
 <div align="center">
 
-**Equipo Tessera** 
+**Tessera Team**
 
-Software propietario — todos los derechos reservados. Ver [LICENSE](./LICENSE).
+Proprietary software — all rights reserved. See [LICENSE](./LICENSE).
 
 </div>
